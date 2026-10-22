@@ -124,6 +124,33 @@ The client from `@ably/pubsub-device` has most of its logs below error level str
 
 If you source the SDK from the CDN rather than npm, the file names are unchanged, but the bundle is now `@ably/pubsub-device`: the global `Ably` object exposes `createClient` rather than the client classes, and the clients it creates declare the device side.
 
+<h3 id="msgpack">Pass the <code>MsgPack</code> plugin to use MessagePack on the web and React Native</h3>
+
+This affects clients on the web and React Native, from npm or the CDN, that set `useBinaryProtocol: true`.
+
+In v2, every client except the modular variant bundled the MessagePack codec. In v3, MessagePack is a plugin that you import and pass in `ClientOptions.plugins`, like Push and LiveObjects. The web and React Native clients of `@ably/pubsub-device` do not include it, to keep them small:
+
+| Client                                                          | MessagePack                     | `useBinaryProtocol` default |
+| --------------------------------------------------------------- | ------------------------------- | --------------------------- |
+| `@ably/pubsub-device` and `/debug`, on the web and React Native | Only with the plugin            | `false`                     |
+| The CDN bundle, `ably.min.js`                                   | Only with the plugin            | `false`                     |
+| `@ably/pubsub-device/modular`                                   | Only with the plugin, as before | `false`                     |
+| `@ably/pubsub-device` and `/debug`, on Node.js                  | Included                        | `true`                      |
+| `@ably/pubsub-server`                                           | Included                        | `true`                      |
+
+JSON was already the default on the web and React Native, so a client there that leaves `useBinaryProtocol` unset or `false` behaves as before. A client that sets `useBinaryProtocol: true` without the plugin now throws an `ErrorInfo` with code 40019 when it is constructed. This includes a modular client, which in v2 silently fell back to JSON instead.
+
+To keep using MessagePack, pass the plugin:
+
+```javascript
+import { createClient } from '@ably/pubsub-device';
+import { MsgPack } from '@ably/pubsub-device/msgpack';
+
+const client = createClient({ key, clientId: 'me', useBinaryProtocol: true, plugins: { MsgPack } });
+```
+
+From the CDN, load `msgpack.umd.min.js` alongside `ably.min.js` and pass `plugins: { MsgPack: AblyMsgPackPlugin.MsgPack }`. To use JSON instead, remove `useBinaryProtocol: true`.
+
 <h2 id="use-the-factories">Create your clients through the factories</h2>
 
 The `Realtime` and `Rest` constructors are gone. A client constructed directly would declare no side, so the factories are now the only way to create one, and they are how a client says which side it is on.
@@ -280,4 +307,5 @@ What the rename deliberately leaves alone: the `restAgentOptions` and `idempoten
 | `Connection.recoveryKey` removed                                                                                                                                                           | `Connection.createRecoveryKey()` ([above](#recovery-key))                                                 |
 | v1 callback-signature overloads removed from the type definitions                                                                                                                          | Await the returned promise ([above](#entry-point-shims))                                                  |
 | LiveObjects `ObjectOperation.mapOp`, `.counterOp`, `.map`, `.counter` and `ObjectData.value` removed, with the `ObjectsMapOp`, `ObjectsCounterOp`, `ObjectsMap` and `ObjectsCounter` types | Use the typed fields ([above](#liveobjects-wire-fields))                                                  |
+| MessagePack is a plugin for the web and React Native clients of `@ably/pubsub-device` and the CDN bundle; `useBinaryProtocol: true` without it throws 40019                                | Pass `MsgPack` from `@ably/pubsub-device/msgpack`, or drop `useBinaryProtocol` ([above](#msgpack))        |
 | `Ably-Agent` SDK identifier is `ably-pubsub-js`, and the side entries are versionless                                                                                                      | Update anything matching on it ([step 5](#agent))                                                         |

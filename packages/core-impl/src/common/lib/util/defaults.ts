@@ -320,6 +320,18 @@ export function normaliseOptions(
     } else {
       options.useBinaryProtocol = Platform.Config.preferBinary;
     }
+  } else if (options.useBinaryProtocol === true) {
+    // Reachable with no codec from the web and React Native bundles of `@ably/pubsub-device`, its CDN
+    // bundle and the modular variant, which leave MessagePack to the `MsgPack` plugin. An explicit request for
+    // the binary protocol is refused rather than quietly downgraded, since those bundles strip the
+    // logs that would otherwise say so.
+    throw new ErrorInfo({
+      message: 'useBinaryProtocol is true but the MsgPack plugin is not provided',
+      code: 40019,
+      statusCode: 400,
+      remediation:
+        'Import { MsgPack } from "@ably/pubsub-device/msgpack" and pass it in ClientOptions.plugins: { MsgPack }. If you load the SDK from the CDN, load msgpack.umd.min.js alongside it and pass plugins: { MsgPack: AblyMsgPackPlugin.MsgPack }. To use JSON instead, remove useBinaryProtocol: true from ClientOptions.',
+    });
   } else {
     options.useBinaryProtocol = false;
   }

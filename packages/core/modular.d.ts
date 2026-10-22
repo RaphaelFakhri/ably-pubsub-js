@@ -104,7 +104,7 @@ export declare const Crypto: unknown;
  * const realtime = createClient({ ...options, plugins: { WebSocketTransport, FetchRequest, MsgPack } });
  * ```
  *
- * When provided, you can control whether the client uses MessagePack via the {@link ClientOptions.useBinaryProtocol} client option. If you do not provide this plugin, then the library will always JSON format for encoding messages.
+ * When provided, you can control whether the client uses MessagePack via the {@link ClientOptions.useBinaryProtocol} client option. If you do not provide this plugin, then the library always uses JSON format for encoding messages, and setting `useBinaryProtocol` to `true` throws an {@link ErrorInfo} with code 40019 when the client is constructed.
  */
 export declare const MsgPack: unknown;
 

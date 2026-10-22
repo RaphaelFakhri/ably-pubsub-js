@@ -274,14 +274,24 @@ define(['ably', 'chai'], function (Ably, chai) {
       }
 
       describe('given no MsgPack implementation', () => {
-        /** @spec TO3f */
-        it('changes useBinaryProtocol to false', function () {
+        /** @nospec */
+        it('throws', function () {
           const helper = this.test.helper;
           helper.recordPrivateApi('call.Defaults.normaliseOptions');
-          var normalisedOptions = Defaults.normaliseOptions({ useBinaryProtocol: true }, null, null);
-
-          expect(normalisedOptions.useBinaryProtocol).to.be.false;
+          expect(() => Defaults.normaliseOptions({ useBinaryProtocol: true }, null, null))
+            .to.throw('useBinaryProtocol is true but the MsgPack plugin is not provided')
+            .with.property('code', 40019);
         });
+      });
+    });
+
+    describe('normaliseOptions without useBinaryProtocol == true, given no MsgPack implementation', () => {
+      /** @spec TO3f */
+      it('sets useBinaryProtocol to false', function () {
+        const helper = this.test.helper;
+        helper.recordPrivateApi('call.Defaults.normaliseOptions');
+        expect(Defaults.normaliseOptions({}, null, null).useBinaryProtocol).to.be.false;
+        expect(Defaults.normaliseOptions({ useBinaryProtocol: false }, null, null).useBinaryProtocol).to.be.false;
       });
     });
 

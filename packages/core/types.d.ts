@@ -429,6 +429,8 @@ export interface ClientOptions<Plugins = CorePlugins> extends AuthOptions {
   /**
    * When `true`, the more efficient MsgPack binary encoding is used. When `false`, JSON text encoding is used. The default is `true` for Node.js, and `false` for all other platforms.
    *
+   * On the web and React Native, a client from `@ably/pubsub-device` or its CDN bundle can use MsgPack only when it is given the {@link CorePlugins.MsgPack | `MsgPack`} plugin, from `@ably/pubsub-device/msgpack` or the CDN's `msgpack.umd.min.js`. Without the plugin it uses JSON, and setting this option to `true` throws an {@link ErrorInfo} with code 40019 when the client is constructed.
+   *
    * @defaultValue `true` for Node.js, `false` for all other platforms
    */
   useBinaryProtocol?: boolean;
@@ -559,6 +561,11 @@ export interface CorePlugins {
    * A plugin which allows the client to be the target of push notifications.
    */
   Push?: unknown;
+
+  /**
+   * A plugin which allows the client to use the MessagePack binary protocol. On the web and React Native, a client from `@ably/pubsub-device` or its CDN bundle has no MessagePack support of its own, and uses JSON unless it is given this plugin, which the package exports from `@ably/pubsub-device/msgpack` and the CDN serves as `AblyMsgPackPlugin.MsgPack` from `msgpack.umd.min.js`. Setting {@link ClientOptions.useBinaryProtocol} to `true` without this plugin throws when the client is constructed. On Node.js, a client from `@ably/pubsub-device` includes MessagePack, as does every client from `@ably/pubsub-server`, so it needs no plugin.
+   */
+  MsgPack?: unknown;
 
   /**
    * A plugin which allows the client to use LiveObjects functionality at `RealtimeChannel.object`.
