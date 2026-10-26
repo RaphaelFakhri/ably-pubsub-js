@@ -34,27 +34,27 @@ The hooks are compatible with all versions of React above 16.8.0, with the excep
 
 ## Usage
 
-Start by connecting your app to Ably using the `AblyProvider` component. See the [`ClientOptions` documentation](https://ably.com/docs/api/realtime-sdk/types?lang=javascript) for information about what options are available when creating an Ably client. If you want to use the `usePresence` or `usePresenceListener` hooks, you'll need to explicitly provide a `clientId`.
+Start by connecting your app to Ably using the `PubSubClientProvider` component. See the [`ClientOptions` documentation](https://ably.com/docs/api/realtime-sdk/types?lang=javascript) for information about what options are available when creating an Ably client. If you want to use the `usePresence` or `usePresenceListener` hooks, you'll need to explicitly provide a `clientId`.
 
-The `AblyProvider` should be high in your component tree, wrapping every component which needs to access Ably.
+The `PubSubClientProvider` should be high in your component tree, wrapping every component which needs to access Ably.
 Also, ensure that the client is created outside of components to prevent it from being recreated on component re-renders. This will help avoid opening extra unnecessary connections to the Ably servers and potentially reaching the maximum connections limit on your account.
 
 ```jsx
-import { AblyProvider } from '@ably/pubsub-device/react';
+import { PubSubClientProvider } from '@ably/pubsub-device/react';
 import { createClient } from '@ably/pubsub-device';
 
 const client = createClient({ key: 'your-ably-api-key', clientId: 'me' });
 
 root.render(
-  <AblyProvider client={client}>
+  <PubSubClientProvider client={client}>
     <App />
-  </AblyProvider>,
+  </PubSubClientProvider>,
 );
 ```
 
 ### Define Ably channels
 
-Once you've set up `AblyProvider`, define Ably channels you want to use by utilizing the `ChannelProvider` component:
+Once you've set up `PubSubClientProvider`, define Ably channels you want to use by utilizing the `ChannelProvider` component:
 
 ```jsx
 <ChannelProvider channelName="your-channel-name">
@@ -448,12 +448,12 @@ useChannelStateListener('failed', listener); // the listener only gets called wh
 useChannelStateListener(['failed', 'suspended'], listener); // the listener only gets called when the channel state becomes failed or suspended
 ```
 
-### useAbly
+### usePubSubClient
 
-The `useAbly` hook lets you access the Ably client used by the `AblyProvider` context. This can be useful if you need to access ably-js APIs which aren't available through our react-hooks library.
+The `usePubSubClient` hook lets you access the Ably client used by the `PubSubClientProvider` context. This can be useful if you need to access ably-js APIs which aren't available through our react-hooks library.
 
 ```javascript
-const client = useAbly();
+const client = usePubSubClient();
 
 client.authorize();
 ```
@@ -495,15 +495,15 @@ useChannel(
 
 ### Usage with multiple clients
 
-If you need to use multiple Ably clients on the same page, the easiest way to do so is to keep your clients in separate `AblyProvider` components. However, if you need to nest `AblyProvider`s, you can pass a string `ablyId` for each client as a prop to the provider.
+If you need to use multiple Ably clients on the same page, the easiest way to do so is to keep your clients in separate `PubSubClientProvider` components. However, if you need to nest `PubSubClientProvider`s, you can pass a string `ablyId` for each client as a prop to the provider.
 
 ```jsx
 root.render(
-  <AblyProvider client={client1} ablyId={'providerOne'}>
-    <AblyProvider client={client2} ablyId={'providerTwo'}>
+  <PubSubClientProvider client={client1} ablyId={'providerOne'}>
+    <PubSubClientProvider client={client2} ablyId={'providerTwo'}>
       <App />
-    </AblyProvider>
-  </AblyProvider>,
+    </PubSubClientProvider>
+  </PubSubClientProvider>,
 );
 ```
 
@@ -512,7 +512,7 @@ This `ablyId` can then be passed in to each hook to specify which client to use.
 ```javascript
 const ablyId = 'providerOne';
 
-const client = useAbly(ablyId);
+const client = usePubSubClient(ablyId);
 
 useChannel({ channelName: 'your-channel-name', ablyId }, (message) => {
   console.log(message);
@@ -527,7 +527,7 @@ usePresenceListener({ channelName: 'your-channel-name', ablyId }, (presenceUpdat
 
 ### Skip attaching to a channel using `skip` parameter
 
-By default, `usePresenceEnter` and `usePresenceListener` automatically attach to a channel upon component mount, and `useChannel` does so if a callback for receiving messages is provided. This means that these hooks will attempt to establish a connection to the Ably server using the credentials currently set in the corresponding `Ably.RealtimeClient` from `AblyProvider`. However, there may be scenarios where your user authentication is asynchronous or when certain parts of your application are conditionally accessible (e.g., premium features). In these instances, you might not have a valid auth token yet, and an attempt to attach to a channel would result in an error.
+By default, `usePresenceEnter` and `usePresenceListener` automatically attach to a channel upon component mount, and `useChannel` does so if a callback for receiving messages is provided. This means that these hooks will attempt to establish a connection to the Ably server using the credentials currently set in the corresponding `Ably.RealtimeClient` from `PubSubClientProvider`. However, there may be scenarios where your user authentication is asynchronous or when certain parts of your application are conditionally accessible (e.g., premium features). In these instances, you might not have a valid auth token yet, and an attempt to attach to a channel would result in an error.
 
 To address this, the `skip` parameter allows you to control the mounting behavior of the `useChannel`, `usePresenceEnter`, and `usePresenceListener` hooks, specifically determining whether they should attach to a channel upon the component's mount.
 

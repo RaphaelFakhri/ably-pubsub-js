@@ -1,5 +1,5 @@
 import * as Ably from '@ably/pubsub-core/api';
-import { ChannelNameAndAblyId } from '../AblyReactHooks.js';
+import { ChannelNameAndAblyId } from '../PubSubReactHooks.js';
 import { useEventListener } from './useEventListener.js';
 import { useChannelInstance } from './useChannelInstance.js';
 

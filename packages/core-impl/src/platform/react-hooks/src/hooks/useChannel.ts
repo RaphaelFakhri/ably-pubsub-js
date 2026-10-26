@@ -1,12 +1,12 @@
 import * as Ably from '@ably/pubsub-core/api';
 import { useEffect, useMemo, useRef } from 'react';
-import { ChannelParameters } from '../AblyReactHooks.js';
-import { useAbly } from './useAbly.js';
+import { ChannelParameters } from '../PubSubReactHooks.js';
+import { usePubSubClient } from './usePubSubClient.js';
 import { useStateErrors } from './useStateErrors.js';
 import { useChannelInstance } from './useChannelInstance.js';
 import { useChannelAttach } from './useChannelAttach.js';
 
-export type AblyMessageCallback = Ably.messageCallback<Ably.Message>;
+export type PubSubMessageCallback = Ably.messageCallback<Ably.Message>;
 
 export interface ChannelResult {
   channel: Ably.RealtimeChannel;
@@ -17,24 +17,24 @@ export interface ChannelResult {
   channelError: Ably.ErrorInfo | null;
 }
 
-type SubscribeArgs = [string, AblyMessageCallback] | [AblyMessageCallback];
+type SubscribeArgs = [string, PubSubMessageCallback] | [PubSubMessageCallback];
 
 // The channel name can be omitted to use the channel from the nearest ChannelProvider.
-export function useChannel(callbackOnMessage?: AblyMessageCallback): ChannelResult;
+export function useChannel(callbackOnMessage?: PubSubMessageCallback): ChannelResult;
 export function useChannel(
   channelNameOrNameAndOptions: ChannelParameters,
-  callbackOnMessage?: AblyMessageCallback,
+  callbackOnMessage?: PubSubMessageCallback,
 ): ChannelResult;
 export function useChannel(
   channelNameOrNameAndOptions: ChannelParameters,
   event: string,
-  callbackOnMessage?: AblyMessageCallback,
+  callbackOnMessage?: PubSubMessageCallback,
 ): ChannelResult;
 
 export function useChannel(
-  channelNameOrNameAndOptionsOrCallback?: ChannelParameters | AblyMessageCallback,
-  eventOrCallback?: string | AblyMessageCallback,
-  callback?: AblyMessageCallback,
+  channelNameOrNameAndOptionsOrCallback?: ChannelParameters | PubSubMessageCallback,
+  eventOrCallback?: string | PubSubMessageCallback,
+  callback?: PubSubMessageCallback,
 ): ChannelResult {
   // The first argument is the message callback when the channel name is
   // inferred from a surrounding ChannelProvider, e.g. useChannel(listener).
@@ -43,7 +43,7 @@ export function useChannel(
     ? undefined
     : (channelNameOrNameAndOptionsOrCallback as ChannelParameters | undefined);
   const eventOrCallbackArg = inferChannelFromNearestProvider
-    ? (channelNameOrNameAndOptionsOrCallback as AblyMessageCallback)
+    ? (channelNameOrNameAndOptionsOrCallback as PubSubMessageCallback)
     : eventOrCallback;
 
   const channelHookOptions =
@@ -53,7 +53,7 @@ export function useChannel(
         ? {}
         : { channelName: channelNameOrNameAndOptions };
 
-  const ably = useAbly(channelHookOptions.ablyId);
+  const ably = usePubSubClient(channelHookOptions.ablyId);
   const { skip } = channelHookOptions;
 
   const { channel, derived, channelName } = useChannelInstance(
@@ -69,9 +69,9 @@ export function useChannel(
   }, [ably.channels, derived, channel, channelName]);
 
   const channelEvent = typeof eventOrCallbackArg === 'string' ? eventOrCallbackArg : null;
-  const ablyMessageCallback = typeof eventOrCallbackArg === 'string' ? callback : eventOrCallbackArg;
+  const pubSubMessageCallback = typeof eventOrCallbackArg === 'string' ? callback : eventOrCallbackArg;
 
-  const ablyMessageCallbackRef = useRef(ablyMessageCallback);
+  const pubSubMessageCallbackRef = useRef(pubSubMessageCallback);
 
   const history: Ably.RealtimeChannel['history'] = useMemo(
     () => ((params?: Ably.RealtimeHistoryParams) => channel.history(params)) as Ably.RealtimeChannel['history'],
@@ -81,13 +81,13 @@ export function useChannel(
   const { connectionError, channelError } = useStateErrors(channelHookOptions);
 
   useEffect(() => {
-    ablyMessageCallbackRef.current = ablyMessageCallback;
-  }, [ablyMessageCallback]);
+    pubSubMessageCallbackRef.current = pubSubMessageCallback;
+  }, [pubSubMessageCallback]);
 
   useEffect(() => {
-    const listener: AblyMessageCallback | null = ablyMessageCallbackRef.current
+    const listener: PubSubMessageCallback | null = pubSubMessageCallbackRef.current
       ? (message) => {
-          ablyMessageCallbackRef.current && ablyMessageCallbackRef.current(message);
+          pubSubMessageCallbackRef.current && pubSubMessageCallbackRef.current(message);
         }
       : null;
 

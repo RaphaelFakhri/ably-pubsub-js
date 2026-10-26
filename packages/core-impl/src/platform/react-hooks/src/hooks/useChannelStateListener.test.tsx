@@ -6,14 +6,14 @@ import { render, screen } from '@testing-library/react';
 import { FakeAblySdk, FakeAblyChannels } from '../fakes/ably.js';
 import * as Ably from '@ably/pubsub-core';
 import { act } from 'react-dom/test-utils';
-import { AblyProvider } from '../AblyProvider.js';
+import { PubSubClientProvider } from '../PubSubClientProvider.js';
 import { ChannelProvider } from '../ChannelProvider.js';
 
 function renderInCtxProvider(client: FakeAblySdk, children: React.ReactNode | React.ReactNode[]) {
   return render(
-    <AblyProvider client={client as unknown as Ably.PubSubRealtimeClient}>
+    <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>
       <ChannelProvider channelName="blah">{children}</ChannelProvider>
-    </AblyProvider>,
+    </PubSubClientProvider>,
   );
 }
 

@@ -6,7 +6,7 @@ import {
   usePresenceListener,
   useConnectionStateListener,
   useChannelStateListener,
-  useAbly,
+  usePubSubClient,
 } from '../../src/index.js';
 import './App.css';
 
@@ -198,7 +198,7 @@ function MessagePreview({ message }: { message: Ably.Message }) {
 }
 
 function ConnectionState() {
-  const ably = useAbly();
+  const ably = usePubSubClient();
   const [connectionState, setConnectionState] = useState(ably.connection.state);
   const [connectionError, setConnectionError] = useState<Ably.ErrorInfo | null>(null);
   useConnectionStateListener((stateChange) => {

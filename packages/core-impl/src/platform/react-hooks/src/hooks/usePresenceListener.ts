@@ -1,6 +1,6 @@
 import type * as Ably from '@ably/pubsub-core/api';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChannelParameters } from '../AblyReactHooks.js';
+import { ChannelParameters } from '../PubSubReactHooks.js';
 import { useChannelInstance } from './useChannelInstance.js';
 import { useStateErrors } from './useStateErrors.js';
 import { useChannelAttach } from './useChannelAttach.js';

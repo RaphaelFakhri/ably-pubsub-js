@@ -98,16 +98,16 @@ A repository with both a frontend and a backend installs both packages, one in e
 
 Every `ably` subpath has a counterpart on `@ably/pubsub-device`:
 
-| v2                                | v3                                      | What you get                                                    |
-| --------------------------------- | --------------------------------------- | --------------------------------------------------------------- |
-| `ably`                            | `@ably/pubsub-device`                   | `createClient`, plus the core's public API and type surface     |
-| `ably/modular`                    | `@ably/pubsub-device/modular`           | `createClient` for a tree-shakable client, and its plugins      |
-| `ably/react`                      | `@ably/pubsub-device/react`             | The React hooks: `AblyProvider`, `useChannel`, `usePresence`, … |
-| `ably/liveobjects`                | `@ably/pubsub-device/liveobjects`       | The LiveObjects plugin                                          |
-| `ably/liveobjects/react`          | `@ably/pubsub-device/liveobjects/react` | The `useObject` React hook for LiveObjects                      |
-| `ably/push`                       | `@ably/pubsub-device/push`              | The web push plugin                                             |
-| `ably/react-native-push`          | `@ably/pubsub-device/react-native-push` | The React Native push plugin                                    |
-| `ably/promises`, `ably/callbacks` | — (removed)                             | See [above](#entry-point-shims)                                 |
+| v2                                | v3                                      | What you get                                                            |
+| --------------------------------- | --------------------------------------- | ----------------------------------------------------------------------- |
+| `ably`                            | `@ably/pubsub-device`                   | `createClient`, plus the core's public API and type surface             |
+| `ably/modular`                    | `@ably/pubsub-device/modular`           | `createClient` for a tree-shakable client, and its plugins              |
+| `ably/react`                      | `@ably/pubsub-device/react`             | The React hooks: `PubSubClientProvider`, `useChannel`, `usePresence`, … |
+| `ably/liveobjects`                | `@ably/pubsub-device/liveobjects`       | The LiveObjects plugin                                                  |
+| `ably/liveobjects/react`          | `@ably/pubsub-device/liveobjects/react` | The `useObject` React hook for LiveObjects                              |
+| `ably/push`                       | `@ably/pubsub-device/push`              | The web push plugin                                                     |
+| `ably/react-native-push`          | `@ably/pubsub-device/react-native-push` | The React Native push plugin                                            |
+| `ably/promises`, `ably/callbacks` | — (removed)                             | See [above](#entry-point-shims)                                         |
 
 `@ably/pubsub-server` carries only what a server needs:
 
@@ -297,6 +297,29 @@ What the rename deliberately leaves alone: the `restAgentOptions` and `idempoten
 > [!NOTE]
 > If you reach into the client's internals, the request layer moved: `client.http` is now the modular `Http` plugin slot, and the requester is at `client.httpRequester`. Both are private API and neither is in `ably.d.ts`.
 
+<h2 id="react-renames">Rename the <code>Ably</code>-prefixed React exports</h2>
+
+The React exports that carried an `Ably` prefix are named after the Pub/Sub client instead:
+
+| v2                         | v3                           |
+| -------------------------- | ---------------------------- |
+| `AblyProvider`             | `PubSubClientProvider`       |
+| `useAbly`                  | `usePubSubClient`            |
+| `AblyContext`              | `PubSubContext`              |
+| `AblyContextValue`         | `PubSubContextValue`         |
+| `AblyContextProviderProps` | `PubSubContextProviderProps` |
+| `AblyMessageCallback`      | `PubSubMessageCallback`      |
+
+Their props, arguments and behaviour are unchanged, including the `ablyId` prop and argument.
+
+```diff
+- import { AblyProvider, useAbly } from 'ably/react';
++ import { PubSubClientProvider, usePubSubClient } from '@ably/pubsub-device/react';
+
+- <AblyProvider client={client}>{children}</AblyProvider>
++ <PubSubClientProvider client={client}>{children}</PubSubClientProvider>
+```
+
 <h2 id="reference">Full list of breaking changes</h2>
 
 | Change                                                                                                                                                                                     | Action                                                                                                    |
@@ -304,6 +327,7 @@ What the rename deliberately leaves alone: the `restAgentOptions` and `idempoten
 | Install `@ably/pubsub-device` or `@ably/pubsub-server` and update every import ([step 2](#switch-package))                                                                                 |
 | `ably/promises` and `ably/callbacks` entry points removed                                                                                                                                  | Import from the package root ([above](#entry-point-shims))                                                |
 | `Rest` → `Http` across the public API, the modular plugins, and the LiveObjects types                                                                                                      | Rename ([step 5](#rest-to-http))                                                                          |
+| React `AblyProvider`, `useAbly`, `AblyContext`, `AblyMessageCallback` and the `AblyContext*` types renamed with a `PubSub` prefix                                                          | Rename ([above](#react-renames))                                                                          |
 | `Realtime` and `Rest` classes removed, with no replacement class                                                                                                                           | Create clients through the factories ([step 3](#use-the-factories))                                       |
 | `BaseRealtime` and `BaseRest` modular classes removed, with no replacement class                                                                                                           | Create clients with `createClient` from `@ably/pubsub-device/modular` ([step 3](#use-the-factories))      |
 | `RealtimeClient` and `RestClient` renamed `PubSubRealtimeClient` and `PubSubHttpClient`                                                                                                    | Rename ([step 3](#use-the-factories))                                                                     |

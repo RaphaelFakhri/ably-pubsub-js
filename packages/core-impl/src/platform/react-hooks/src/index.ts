@@ -1,10 +1,10 @@
-export * from './AblyReactHooks.js';
+export * from './PubSubReactHooks.js';
 export * from './hooks/useChannel.js';
 export * from './hooks/usePresence.js';
 export * from './hooks/usePresenceListener.js';
-export * from './hooks/useAbly.js';
-export * from './AblyProvider.js';
+export * from './hooks/usePubSubClient.js';
+export * from './PubSubClientProvider.js';
 export * from './hooks/useChannelStateListener.js';
 export * from './hooks/useConnectionStateListener.js';
 export { ChannelProvider } from './ChannelProvider.js';
-export * from './AblyContext.js';
+export * from './PubSubContext.js';

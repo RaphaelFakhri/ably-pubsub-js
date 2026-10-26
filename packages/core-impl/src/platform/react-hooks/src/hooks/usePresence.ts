@@ -1,7 +1,7 @@
 import type * as Ably from '@ably/pubsub-core/api';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChannelParameters } from '../AblyReactHooks.js';
-import { useAbly } from './useAbly.js';
+import { ChannelParameters } from '../PubSubReactHooks.js';
+import { usePubSubClient } from './usePubSubClient.js';
 import { useChannelInstance } from './useChannelInstance.js';
 import { useStateErrors } from './useStateErrors.js';
 import { useChannelStateListener } from './useChannelStateListener.js';
@@ -35,7 +35,7 @@ export function usePresence<T = any>(
         : { channelName: channelNameOrNameAndOptions };
   const skip = params.skip;
 
-  const ably = useAbly(params.ablyId);
+  const ably = usePubSubClient(params.ablyId);
   const { channel } = useChannelInstance(params.ablyId, params.channelName);
   const { connectionError, channelError } = useStateErrors(params);
 

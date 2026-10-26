@@ -1,5 +1,5 @@
 import * as Ably from '@ably/pubsub-core/api';
-import { useAbly } from './useAbly.js';
+import { usePubSubClient } from './usePubSubClient.js';
 import { useEventListener } from './useEventListener.js';
 
 type ConnectionStateListener = (stateChange: Ably.ConnectionStateChange) => any;
@@ -18,7 +18,7 @@ export function useConnectionStateListener(
   ablyId = 'default',
 ) {
   const _ablyId = typeof listenerOrAblyId === 'string' ? listenerOrAblyId : ablyId;
-  const ably = useAbly(_ablyId);
+  const ably = usePubSubClient(_ablyId);
 
   const listener =
     typeof listenerOrAblyId === 'function' ? listenerOrAblyId : (stateOrListener as ConnectionStateListener);

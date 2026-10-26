@@ -5,11 +5,13 @@ import { render, screen } from '@testing-library/react';
 import { FakeAblySdk } from '../fakes/ably.js';
 import * as Ably from '@ably/pubsub-core';
 import { act } from 'react-dom/test-utils';
-import { AblyProvider } from '../AblyProvider.js';
+import { PubSubClientProvider } from '../PubSubClientProvider.js';
 import { useConnectionStateListener } from './useConnectionStateListener.js';
 
 function renderInCtxProvider(client: FakeAblySdk, children: React.ReactNode | React.ReactNode[]) {
-  return render(<AblyProvider client={client as unknown as Ably.PubSubRealtimeClient}>{children}</AblyProvider>);
+  return render(
+    <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>{children}</PubSubClientProvider>,
+  );
 }
 
 describe('useConnectionStateListener', () => {

@@ -4,16 +4,16 @@ import { it, beforeEach, describe, expect, vi } from 'vitest';
 import { usePresence } from './usePresence.js';
 import { render, screen, act, waitFor } from '@testing-library/react';
 import { FakeAblySdk, FakeAblyChannels } from '../fakes/ably.js';
-import { AblyProvider } from '../AblyProvider.js';
+import { PubSubClientProvider } from '../PubSubClientProvider.js';
 import { ChannelProvider } from '../ChannelProvider.js';
 
 const testChannelName = 'testChannel';
 
 function renderInCtxProvider(client: FakeAblySdk, children: React.ReactNode | React.ReactNode[]) {
   return render(
-    <AblyProvider client={client as unknown as Ably.PubSubRealtimeClient}>
+    <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>
       <ChannelProvider channelName={testChannelName}>{children}</ChannelProvider>
-    </AblyProvider>,
+    </PubSubClientProvider>,
   );
 }
 
@@ -109,11 +109,11 @@ describe('usePresence', () => {
 
     renderInCtxProvider(
       ablyClient,
-      <AblyProvider ablyId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
+      <PubSubClientProvider ablyId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
         <ChannelProvider channelName={testChannelName} ablyId="otherClient">
           <UsePresenceComponentMultipleClients />
         </ChannelProvider>
-      </AblyProvider>,
+      </PubSubClientProvider>,
     );
 
     await act(async () => {
@@ -134,11 +134,11 @@ describe('usePresence', () => {
     ablyClient.channels.get(testChannelName).presence.subscribe('update', updateListener);
 
     render(
-      <AblyProvider ablyId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
+      <PubSubClientProvider ablyId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
         <ChannelProvider channelName={testChannelName} ablyId="otherClient">
           <UsePresenceComponentWithOtherClient />
         </ChannelProvider>
-      </AblyProvider>,
+      </PubSubClientProvider>,
     );
 
     await act(async () => {

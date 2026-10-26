@@ -1,5 +1,5 @@
 import { it, describe, expect } from 'vitest';
-import { channelOptionsForReactHooks, version } from './AblyReactHooks.js';
+import { channelOptionsForReactHooks, version } from './PubSubReactHooks.js';
 
 describe('channelOptionsForReactHooks', () => {
   it('sets the react-hooks agent when no options are provided', () => {

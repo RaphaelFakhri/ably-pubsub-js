@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useMemo } from 'react';
 import * as Ably from '@ably/pubsub-core/api';
-import { type AblyContextValue, AblyContext } from './AblyContext.js';
-import { channelOptionsForReactHooks } from './AblyReactHooks.js';
+import { type PubSubContextValue, PubSubContext } from './PubSubContext.js';
+import { channelOptionsForReactHooks } from './PubSubReactHooks.js';
 
 interface ChannelProviderProps {
   ablyId?: string;
@@ -18,7 +18,7 @@ export const ChannelProvider = ({
   deriveOptions,
   children,
 }: ChannelProviderProps) => {
-  const context = React.useContext(AblyContext);
+  const context = React.useContext(PubSubContext);
   const { client, _channelNameToChannelContext } = context[ablyId];
 
   if (_channelNameToChannelContext[channelName]) {
@@ -28,7 +28,7 @@ export const ChannelProvider = ({
   const derived = Boolean(deriveOptions);
   const channel = derived ? client.channels.getDerived(channelName, deriveOptions) : client.channels.get(channelName);
 
-  const value: AblyContextValue = useMemo(() => {
+  const value: PubSubContextValue = useMemo(() => {
     return {
       ...context,
       [ablyId]: {
@@ -49,5 +49,5 @@ export const ChannelProvider = ({
     channel.setOptions(channelOptionsForReactHooks(options));
   }, [channel, options]);
 
-  return <AblyContext.Provider value={value}>{children}</AblyContext.Provider>;
+  return <PubSubContext.Provider value={value}>{children}</PubSubContext.Provider>;
 };

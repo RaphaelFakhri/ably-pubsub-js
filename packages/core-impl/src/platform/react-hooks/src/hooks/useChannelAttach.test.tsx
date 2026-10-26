@@ -14,8 +14,8 @@ describe('useChannelAttach', () => {
       useConnectionStateListener: vi.fn(),
     }));
 
-    vi.doMock('./useAbly.js', () => ({
-      useAbly: () => fakeAblyClientRef.current,
+    vi.doMock('./usePubSubClient.js', () => ({
+      usePubSubClient: () => fakeAblyClientRef.current,
     }));
 
     context.useChannelAttach = (await import('./useChannelAttach.js')).useChannelAttach;

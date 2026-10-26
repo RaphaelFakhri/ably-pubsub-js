@@ -1,7 +1,7 @@
 import type * as Ably from '@ably/pubsub-core/api';
 import { useEffect, useState } from 'react';
 import { useConnectionStateListener } from './useConnectionStateListener.js';
-import { useAbly } from './useAbly.js';
+import { usePubSubClient } from './usePubSubClient.js';
 import { INACTIVE_CONNECTION_STATES } from './constants.js';
 import { logError } from '../utils.js';
 
@@ -14,7 +14,7 @@ export function useChannelAttach(
   ablyId: string | undefined,
   skip: boolean,
 ): ChannelAttachResult {
-  const ably = useAbly(ablyId);
+  const ably = usePubSubClient(ablyId);
 
   // we need to listen for the current connection state in order to react to it.
   // for example, we should attach when first connected, re-enter when reconnected,

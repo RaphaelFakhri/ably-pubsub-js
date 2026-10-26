@@ -4,7 +4,7 @@ import type * as Ably from '@ably/pubsub-core';
 import type { LiveMap, PathObject, Value } from '@ably/pubsub-core/liveobjects';
 import { dequal } from 'dequal';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { ChannelNameAndOptions } from '../AblyReactHooks.js';
+import { ChannelNameAndOptions } from '../PubSubReactHooks.js';
 import { INACTIVE_CONNECTION_STATES } from '../hooks/constants.js';
 import { useChannelAttach } from '../hooks/useChannelAttach.js';
 import { useChannelInstance } from '../hooks/useChannelInstance.js';
@@ -13,7 +13,7 @@ import { useStateErrors } from '../hooks/useStateErrors.js';
 /**
  * Options for {@link useObject}. The standard channel-hook options: the channel
  * is resolved from the nearest `ChannelProvider` unless `channelName` is
- * provided, `ablyId` selects the client from a surrounding `AblyProvider`, and
+ * provided, `ablyId` selects the client from a surrounding `PubSubClientProvider`, and
  * `skip` short-circuits the hook.
  */
 export type UseObjectOptions = ChannelNameAndOptions;
