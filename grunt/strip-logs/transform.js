@@ -11,7 +11,8 @@ const implSrcDir = path.join(__dirname, '..', '..', 'packages', 'core-impl', 'sr
 
 /**
  * Removes every `Logger.logAction(...)` call below error level from one source file of the
- * implementation, keeping error-level calls and `Logger.logActionNoStrip(...)` calls.
+ * implementation, keeping error-level calls and `Logger.logActionNoStrip(...)` calls, and sets the
+ * `Logger.logsStripped` flag.
  *
  * Shared by the esbuild plugin (../esbuild/strip-logs.js) and the webpack loader
  * (../webpack/strip-logs-loader.js), each of which adds the bundle-wide sense checks of
@@ -31,6 +32,14 @@ function stripLogs(contents, filePath, stats) {
   babel.traverse.default(ast, {
     enter(path) {
       if (
+        path.isClassProperty({ static: true }) &&
+        babel.types.isIdentifier(path.node.key, { name: 'logsStripped' }) &&
+        babel.types.isIdentifier(path.parentPath.parentPath.node.id, { name: 'Logger' })
+      ) {
+        // `path` is the `Logger.logsStripped` flag; tell the client that this build is stripped.
+        stats.foundLogsStrippedFlag = true;
+        path.node.value = babel.types.booleanLiteral(true);
+      } else if (
         path.isCallExpression() &&
         babel.types.isMemberExpression(path.node.callee) &&
         babel.types.isIdentifier(path.node.callee.object, { name: 'Logger' })
@@ -78,7 +87,7 @@ function stripLogs(contents, filePath, stats) {
 
 /** What {@link stripLogs} has found across the files of one bundle. */
 function createStripLogsStats() {
-  return { foundLogToStrip: false, foundErrorLog: false, foundNoStripLog: false };
+  return { foundLogToStrip: false, foundErrorLog: false, foundNoStripLog: false, foundLogsStrippedFlag: false };
 }
 
 /**
@@ -110,6 +119,13 @@ function checkStripLogsStats(stats) {
 
   if (!stats.foundNoStripLog) {
     errorMessages.push('Did not find any Logger.logActionNoStrip(...) calls to preserve');
+  }
+
+  // Make sure that the client can still tell that its logs were stripped, so that it warns a
+  // developer who raises `logLevel` (see the `Logger.logsStripped` docstring).
+
+  if (!stats.foundLogsStrippedFlag) {
+    errorMessages.push('Did not find the Logger.logsStripped flag to set');
   }
 
   return errorMessages;

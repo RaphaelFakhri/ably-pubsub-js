@@ -134,9 +134,9 @@ const nodeExternals = ['ws', 'got'];
 
 const pubsubPackageConfigs = [
   ...createPackageConfigs('device', [
-    // The package root strips every log below error level, which is what ships to end users'
+    // The package root strips most logs below error level, which is what ships to end users'
     // devices: smaller, and without the detail of the client's internals. `@ably/pubsub-device/debug`
-    // serves the same entry point with full logging, for diagnosing an app during development.
+    // serves the same entry point with full logging, for diagnosing an app.
     // The React Native pair is built by webpack (webpack.config.js).
     { name: 'index', plugins: [stripLogsPlugin] },
     { name: 'node', source: 'index', platform: 'node', external: nodeExternals, plugins: [stripLogsPlugin] },

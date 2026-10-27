@@ -14,29 +14,38 @@ define(['chai'], function (chai) {
   const PubSubDevice = require('@ably/pubsub-device');
   const PubSubDeviceDebug = require('@ably/pubsub-device/debug');
 
-  // Constructs a client at the most verbose log level and returns everything it logged. The client
-  // never connects, so the logs are those of construction alone, which include several below
-  // error level and none at it.
-  function logsOfConstruction(createClient) {
+  // Constructs a client at the given log level and returns everything it logged. The client never
+  // connects, so the logs are those of construction alone, which include several below error level
+  // and, from a stripped build at a level above error, the warning that its logs are stripped.
+  function logsOfConstruction(createClient, logLevel = 4) {
     const logs = [];
     const client = createClient({
       key: 'app.key:secret',
       autoConnect: false,
-      logLevel: 4,
+      logLevel,
       logHandler: (message) => logs.push(message),
     });
     client.close();
     return logs;
   }
 
+  const strippedWarning = 'this build of the client has most logs below error level stripped';
+
   describe('pubsub_device_debug', function () {
-    it('@ably/pubsub-device logs nothing below error level', function () {
-      expect(logsOfConstruction(PubSubDevice.createClient)).to.deep.equal([]);
+    it('@ably/pubsub-device logs only the stripped-logs warning below error level', function () {
+      const logs = logsOfConstruction(PubSubDevice.createClient);
+      expect(logs).to.have.lengthOf(1);
+      expect(logs[0]).to.include(strippedWarning).and.include('@ably/pubsub-device/debug');
     });
 
-    it('@ably/pubsub-device/debug logs below error level', function () {
+    it('@ably/pubsub-device does not warn at the error log level', function () {
+      expect(logsOfConstruction(PubSubDevice.createClient, 1)).to.deep.equal([]);
+    });
+
+    it('@ably/pubsub-device/debug logs below error level, without the stripped-logs warning', function () {
       const logs = logsOfConstruction(PubSubDeviceDebug.createClient);
       expect(logs.some((message) => message.includes('BaseClient(): started'))).to.equal(true);
+      expect(logs.some((message) => message.includes(strippedWarning))).to.equal(false);
     });
 
     it('@ably/pubsub-device/debug exports what the package root exports', function () {
