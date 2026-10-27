@@ -80,6 +80,8 @@ You can also source the SDK directly in your HTML. (This url will point to the l
 
 The CDN bundle exposes the SDK as the global `AblyPubSub`.
 
+Like the client from `@ably/pubsub-device`, the CDN bundle has most of its logs below error level stripped. To see every log, load `ably.debug.min` in place of `ably.min` in the URL. It is the same bundle, built with full logging, and exposes the same `AblyPubSub` global.
+
 > [!NOTE]
 > The CDN bundle is the `@ably/pubsub-device` build, so the clients it creates declare the device side. To declare the server side, install `@ably/pubsub-server` instead.
 
