@@ -19,10 +19,10 @@ jobs:
           submodules: 'recursive'
           persist-credentials: false
 
-      - name: Use Node.js 20.x
+      - name: Use Node.js 22.x
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
         with:
-          node-version: 20.x
+          node-version: 22.x
 
       - name: Install Package Dependencies
         run: npm ci

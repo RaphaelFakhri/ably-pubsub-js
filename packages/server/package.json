@@ -72,6 +72,6 @@
     "server"
   ],
   "engines": {
-    "node": ">=16"
+    "node": ">=22"
   }
 }
