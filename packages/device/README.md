@@ -59,7 +59,7 @@ import { Push } from '@ably/pubsub-device/push';
 
 ## Logging
 
-The client from `@ably/pubsub-device` has most of its logs below error level stripped, to keep it small and keep the detail of the client's internals out of what ships to your users. It keeps its error logs, a few warnings, and the logs of each protocol message and HTTP request it sends and receives, which it logs at level `4`. The push and LiveObjects plugins keep all their logs. So a `logLevel` above error shows only part of what the client does, and a `logHandler` receives only those logs. A client created with a `logLevel` above error logs a warning saying so.
+The client from `@ably/pubsub-device` has most of its logs below error level stripped, to keep it small and keep the detail of the client's internals out of what ships to your users. It keeps its error logs, a few warnings, and the logs of each protocol message and HTTP request it sends and receives, which it logs at level `4`. The push and LiveObjects plugins keep all their logs. So a `logLevel` above error shows only part of what the client does, and a `logHandler` receives only those logs. A client created with a `logLevel` above error logs a warning saying so. On Node.js, the package root keeps every log.
 
 To see every log, import `createClient` from `@ably/pubsub-device/debug` instead. It is the same client, and exports everything the root does, from a build that keeps every log. Choose how much it logs with the `logLevel` client option:
 

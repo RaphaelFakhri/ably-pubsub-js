@@ -39,7 +39,7 @@ export type PubSubClient = PubSubRealtimeClient;
  * This build of the client has most logs below error level stripped from it, so a `logLevel` above
  * error shows only part of what the client does: its protocol message and HTTP request logs, a few
  * warnings, and the plugins' logs. For full logging, import `createClient` from
- * `@ably/pubsub-device/debug` instead.
+ * `@ably/pubsub-device/debug` instead. On Node.js, this build keeps every log.
  *
  * On the web and React Native, this build of the client also leaves MessagePack out, so it uses
  * JSON whatever `ClientOptions.useBinaryProtocol` says. To use the binary protocol there, pass the
