@@ -73,10 +73,15 @@ You can also source the SDK directly in your HTML. (This url will point to the l
 
 ```html
 <script src="https://cdn.ably.com/lib/ably.min-2.js"></script>
+<script>
+  const realtimeClient = AblyPubSub.createClient({ key: 'your-ably-api-key', clientId: 'me' });
+</script>
 ```
 
+The CDN bundle exposes the SDK as the global `AblyPubSub`.
+
 > [!NOTE]
-> The CDN bundle is the shared core, and so declares no side. Clients created from it are classified by Ably's default rules. Install one of the packages above if you want to declare a side explicitly.
+> The CDN bundle is the `@ably/pubsub-device` build, so the clients it creates declare the device side. To declare the server side, install `@ably/pubsub-server` instead.
 
 ## Usage
 

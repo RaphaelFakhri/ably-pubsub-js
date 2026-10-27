@@ -198,7 +198,7 @@ function createCdnConfigs(entry, libraryName, outName, external = []) {
 }
 
 const cdnConfigs = [
-  ...createCdnConfigs('index', 'Ably', 'ably'),
+  ...createCdnConfigs('index', 'AblyPubSub', 'ably'),
   ...createCdnConfigs('push', 'AblyPushPlugin', 'push.umd'),
   ...createCdnConfigs('liveobjects', 'AblyLiveObjectsPlugin', 'liveobjects.umd'),
   ...createCdnConfigs('msgpack', 'AblyMsgPackPlugin', 'msgpack.umd'),

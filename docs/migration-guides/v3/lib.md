@@ -122,7 +122,12 @@ The stateless HTTP client is a server-side concern, and `@ably/pubsub-device` do
 
 The client from `@ably/pubsub-device` logs errors only: every log below error level is stripped from it, so raising `logLevel` there shows nothing more. To see the full logs while developing an app, import `createClient` from `@ably/pubsub-device/debug`, which is the same client from a build that keeps every log. `@ably/pubsub-server` keeps every log.
 
-If you source the SDK from the CDN rather than npm, the file names are unchanged, but the bundle is now `@ably/pubsub-device`: the global `Ably` object exposes `createClient` rather than the client classes, and the clients it creates declare the device side.
+If you source the SDK from the CDN rather than npm, the file names are unchanged, but the bundle is now `@ably/pubsub-device`, exposed as the global `AblyPubSub` rather than `Ably`. That global exposes `createClient` rather than the client classes, and the clients it creates declare the device side:
+
+```diff
+- const client = new Ably.Realtime({ key, clientId: 'me' });
++ const client = AblyPubSub.createClient({ key, clientId: 'me' });
+```
 
 <h2 id="use-the-factories">Create your clients through the factories</h2>
 
@@ -308,3 +313,4 @@ Their props, arguments and behaviour are unchanged, including the `ablyId` prop 
 | `Ably-Agent` SDK identifier is `ably-pubsub-js`, and the side entries are versionless                                                                                                                                                                              | Update anything matching on it ([step 5](#agent))                                                         |
 | The published code, including the CDN bundle, targets ES2020 instead of ES2017
 | Node.js 22 or later required                                                                                                                                                               | Upgrade Node.js ([step 2](#switch-package))                                                               |
+| CDN bundle global renamed from `Ably` to `AblyPubSub`                                                                                                                                      | Rename ([step 2](#import-paths))                                                                          |
