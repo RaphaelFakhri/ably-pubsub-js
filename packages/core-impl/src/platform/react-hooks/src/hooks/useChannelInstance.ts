@@ -3,8 +3,8 @@ import { PubSubContext, ChannelContextProps } from '../PubSubContext.js';
 
 export type ResolvedChannelContextProps = ChannelContextProps & { channelName: string };
 
-export function useChannelInstance(ablyId = 'default', channelName?: string): ResolvedChannelContextProps {
-  const pubSubContext = React.useContext(PubSubContext)[ablyId];
+export function useChannelInstance(contextId = 'default', channelName?: string): ResolvedChannelContextProps {
+  const pubSubContext = React.useContext(PubSubContext)[contextId];
 
   if (!pubSubContext) {
     throw new Error(

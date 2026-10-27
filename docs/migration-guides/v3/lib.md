@@ -310,34 +310,48 @@ The React exports that carried an `Ably` prefix are named after the Pub/Sub clie
 | `AblyContextProviderProps` | `PubSubContextProviderProps` |
 | `AblyMessageCallback`      | `PubSubMessageCallback`      |
 
-Their props, arguments and behaviour are unchanged, including the `ablyId` prop and argument.
+The props, options and return values that named the client after Ably are renamed too:
+
+| v2                                                                                       | v3                        |
+| ---------------------------------------------------------------------------------------- | ------------------------- |
+| `ablyId` prop on `AblyProvider` and `ChannelProvider`, option and argument on every hook | `contextId`               |
+| `ably` in the `useChannel` result                                                        | `client`                  |
+| `ChannelNameAndAblyId` type                                                              | `ChannelNameAndContextId` |
+
+Their behaviour is unchanged.
 
 ```diff
 - import { AblyProvider, useAbly } from 'ably/react';
 + import { PubSubClientProvider, usePubSubClient } from '@ably/pubsub-device/react';
 
-- <AblyProvider client={client}>{children}</AblyProvider>
-+ <PubSubClientProvider client={client}>{children}</PubSubClientProvider>
+- <AblyProvider client={client} ablyId="secondary">{children}</AblyProvider>
++ <PubSubClientProvider client={client} contextId="secondary">{children}</PubSubClientProvider>
+
+- const { channel, ably } = useChannel({ channelName: 'chat', ablyId: 'secondary' });
++ const { channel, client } = useChannel({ channelName: 'chat', contextId: 'secondary' });
 ```
+
+> [!NOTE]
+> A v2 `AblyProvider` and a v3 `PubSubClientProvider` do not share a React context, so hooks from one version cannot see a client provided by the other. Migrate a component tree's providers and hooks together.
 
 <h2 id="reference">Full list of breaking changes</h2>
 
-| Change                                                                                                                                                                                     | Action                                                                                                    |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| Install `@ably/pubsub-device` or `@ably/pubsub-server` and update every import ([step 2](#switch-package))                                                                                 |
-| `ably/promises` and `ably/callbacks` entry points removed                                                                                                                                  | Import from the package root ([above](#entry-point-shims))                                                |
-| `Rest` → `Http` across the public API, the modular plugins, and the LiveObjects types                                                                                                      | Rename ([step 5](#rest-to-http))                                                                          |
-| React `AblyProvider`, `useAbly`, `AblyContext`, `AblyMessageCallback` and the `AblyContext*` types renamed with a `PubSub` prefix                                                          | Rename ([above](#react-renames))                                                                          |
-| `Realtime` and `Rest` classes removed, with no replacement class                                                                                                                           | Create clients through the factories ([step 3](#use-the-factories))                                       |
-| `BaseRealtime` and `BaseRest` modular classes removed, with no replacement class                                                                                                           | Create clients with `createClient` from `@ably/pubsub-device/modular` ([step 3](#use-the-factories))      |
-| `RealtimeClient` and `RestClient` renamed `PubSubRealtimeClient` and `PubSubHttpClient`                                                                                                    | Rename ([step 3](#use-the-factories))                                                                     |
-| `Message`, `PresenceMessage`, `Annotation` and `Crypto` statics moved to named class exports; `MessageStatic`, `PresenceMessageStatic` and `AnnotationStatic` removed                      | Import them by name ([step 4](#static-helpers))                                                           |
-| `@ably/pubsub-device` offers no HTTP client, and omits its types and its LiveObjects API                                                                                                   | Use the realtime client, or `@ably/pubsub-server` on infrastructure you operate ([step 2](#import-paths)) |
-| `environment`, `restHost` and `realtimeHost` client options removed — **silently ignored**, not rejected                                                                                   | Use `endpoint` ([above](#endpoint))                                                                       |
-| `device()` removed from the `Http` and `Realtime` clients                                                                                                                                  | `await getDevice()` ([above](#get-device))                                                                |
-| `Connection.recoveryKey` removed                                                                                                                                                           | `Connection.createRecoveryKey()` ([above](#recovery-key))                                                 |
-| v1 callback-signature overloads removed from the type definitions                                                                                                                          | Await the returned promise ([above](#entry-point-shims))                                                  |
-| LiveObjects `ObjectOperation.mapOp`, `.counterOp`, `.map`, `.counter` and `ObjectData.value` removed, with the `ObjectsMapOp`, `ObjectsCounterOp`, `ObjectsMap` and `ObjectsCounter` types | Use the typed fields ([above](#liveobjects-wire-fields))                                                  |
+| Change                                                                                                                                                                                                                                                             | Action                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Install `@ably/pubsub-device` or `@ably/pubsub-server` and update every import ([step 2](#switch-package))                                                                                                                                                         |
+| `ably/promises` and `ably/callbacks` entry points removed                                                                                                                                                                                                          | Import from the package root ([above](#entry-point-shims))                                                |
+| `Rest` → `Http` across the public API, the modular plugins, and the LiveObjects types                                                                                                                                                                              | Rename ([step 5](#rest-to-http))                                                                          |
+| React `AblyProvider`, `useAbly`, `AblyContext`, `AblyMessageCallback` and the `AblyContext*` types renamed with a `PubSub` prefix. `ablyId`, the `useChannel` result `ably` and `ChannelNameAndAblyId` renamed `contextId`, `client` and `ChannelNameAndContextId` | Rename ([above](#react-renames))                                                                          |
+| `Realtime` and `Rest` classes removed, with no replacement class                                                                                                                                                                                                   | Create clients through the factories ([step 3](#use-the-factories))                                       |
+| `BaseRealtime` and `BaseRest` modular classes removed, with no replacement class                                                                                                                                                                                   | Create clients with `createClient` from `@ably/pubsub-device/modular` ([step 3](#use-the-factories))      |
+| `RealtimeClient` and `RestClient` renamed `PubSubRealtimeClient` and `PubSubHttpClient`                                                                                                                                                                            | Rename ([step 3](#use-the-factories))                                                                     |
+| `Message`, `PresenceMessage`, `Annotation` and `Crypto` statics moved to named class exports; `MessageStatic`, `PresenceMessageStatic` and `AnnotationStatic` removed                                                                                              | Import them by name ([step 4](#static-helpers))                                                           |
+| `@ably/pubsub-device` offers no HTTP client, and omits its types and its LiveObjects API                                                                                                                                                                           | Use the realtime client, or `@ably/pubsub-server` on infrastructure you operate ([step 2](#import-paths)) |
+| `environment`, `restHost` and `realtimeHost` client options removed — **silently ignored**, not rejected                                                                                                                                                           | Use `endpoint` ([above](#endpoint))                                                                       |
+| `device()` removed from the `Http` and `Realtime` clients                                                                                                                                                                                                          | `await getDevice()` ([above](#get-device))                                                                |
+| `Connection.recoveryKey` removed                                                                                                                                                                                                                                   | `Connection.createRecoveryKey()` ([above](#recovery-key))                                                 |
+| v1 callback-signature overloads removed from the type definitions                                                                                                                                                                                                  | Await the returned promise ([above](#entry-point-shims))                                                  |
+| LiveObjects `ObjectOperation.mapOp`, `.counterOp`, `.map`, `.counter` and `ObjectData.value` removed, with the `ObjectsMapOp`, `ObjectsCounterOp`, `ObjectsMap` and `ObjectsCounter` types                                                                         | Use the typed fields ([above](#liveobjects-wire-fields))                                                  |
 | MessagePack is a plugin for the web and React Native clients of `@ably/pubsub-device` and the CDN bundle; `useBinaryProtocol: true` without it throws 40019                                | Pass `MsgPack` from `@ably/pubsub-device/msgpack`, or drop `useBinaryProtocol` ([above](#msgpack))        |
-| `Ably-Agent` SDK identifier is `ably-pubsub-js`, and the side entries are versionless                                                                                                      | Update anything matching on it ([step 5](#agent))                                                         |
+| `Ably-Agent` SDK identifier is `ably-pubsub-js`, and the side entries are versionless                                                                                                                                                                              | Update anything matching on it ([step 5](#agent))                                                         |
 | The published code, including the CDN bundle, targets ES2020 instead of ES2017                                                                                                             | Transpile the SDK in your bundler, or drop runtimes without ES2020 support ([above](#es2020))             |

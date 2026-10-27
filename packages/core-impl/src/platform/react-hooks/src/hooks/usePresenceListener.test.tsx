@@ -140,8 +140,8 @@ describe('usePresenceListener', () => {
 
     renderInCtxProvider(
       ablyClient,
-      <PubSubClientProvider ablyId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
-        <ChannelProvider channelName={testChannelName} ablyId="otherClient">
+      <PubSubClientProvider contextId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
+        <ChannelProvider channelName={testChannelName} contextId="otherClient">
           <UsePresenceListenerComponentMultipleClients />
         </ChannelProvider>
       </PubSubClientProvider>,
@@ -345,7 +345,10 @@ const UsePresenceListenerComponent = ({
 
 const UsePresenceListenerComponentMultipleClients = () => {
   const { presenceData: presenceData1 } = usePresenceListener({ channelName: testChannelName });
-  const { presenceData: presenceData2 } = usePresenceListener({ channelName: testChannelName, ablyId: 'otherClient' });
+  const { presenceData: presenceData2 } = usePresenceListener({
+    channelName: testChannelName,
+    contextId: 'otherClient',
+  });
 
   const presentUsers1 = presenceData1.map((presence, index) => {
     return (

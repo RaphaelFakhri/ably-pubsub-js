@@ -98,7 +98,7 @@ When providers are nested, the nearest one wins. You can still pass an explicit 
 ```
 
 > [!NOTE]
-> Channel resolution is scoped by `ablyId`. A hook called without an `ablyId` uses the `default` one, so it only resolves to a `ChannelProvider` that also uses the `default` `ablyId`. If your `ChannelProvider` uses a non-default `ablyId`, you must pass it to the hook for the channel to be inferred, for example `useChannel({ ablyId: 'your-ably-id' })`.
+> Channel resolution is scoped by `contextId`. A hook called without a `contextId` uses the `default` one, so it only resolves to a `ChannelProvider` that also uses the `default` `contextId`. If your `ChannelProvider` uses a non-default `contextId`, you must pass it to the hook for the channel to be inferred, for example `useChannel({ contextId: 'your-context-id' })`.
 
 <!-- -->
 
@@ -141,7 +141,7 @@ return (
 The useChannel hook lets you subscribe to an [Ably Channel](https://ably.com/docs/channels) and receive messages from it.
 
 ```javascript
-const { channel, ably } = useChannel('your-channel-name', (message) => {
+const { channel, client } = useChannel('your-channel-name', (message) => {
   console.log(message);
 });
 ```
@@ -402,7 +402,7 @@ Two things to note about `value`:
 - It is a cached snapshot: its identity only changes when the subscribed node changes, so it is safe to use in dependency arrays.
 - It is a by-value copy: the same logical node reached through two different hooks is not reference-equal. Compare fields rather than snapshots, and use `object` when you need a stable identity.
 
-Like the other channel hooks, `useObject` accepts the standard options (`channelName`, `ablyId`, `skip`, `onConnectionError`, `onChannelError`) and returns `connectionError` / `channelError`:
+Like the other channel hooks, `useObject` accepts the standard options (`channelName`, `contextId`, `skip`, `onConnectionError`, `onChannelError`) and returns `connectionError` / `channelError`:
 
 ```javascript
 const { value, error, connectionError, channelError } = useObject((obj) => obj.get('scores'), {
@@ -495,32 +495,32 @@ useChannel(
 
 ### Usage with multiple clients
 
-If you need to use multiple Ably clients on the same page, the easiest way to do so is to keep your clients in separate `PubSubClientProvider` components. However, if you need to nest `PubSubClientProvider`s, you can pass a string `ablyId` for each client as a prop to the provider.
+If you need to use multiple Ably clients on the same page, the easiest way to do so is to keep your clients in separate `PubSubClientProvider` components. However, if you need to nest `PubSubClientProvider`s, you can pass a string `contextId` for each client as a prop to the provider.
 
 ```jsx
 root.render(
-  <PubSubClientProvider client={client1} ablyId={'providerOne'}>
-    <PubSubClientProvider client={client2} ablyId={'providerTwo'}>
+  <PubSubClientProvider client={client1} contextId={'providerOne'}>
+    <PubSubClientProvider client={client2} contextId={'providerTwo'}>
       <App />
     </PubSubClientProvider>
   </PubSubClientProvider>,
 );
 ```
 
-This `ablyId` can then be passed in to each hook to specify which client to use.
+This `contextId` can then be passed in to each hook to specify which client to use.
 
 ```javascript
-const ablyId = 'providerOne';
+const contextId = 'providerOne';
 
-const client = usePubSubClient(ablyId);
+const client = usePubSubClient(contextId);
 
-useChannel({ channelName: 'your-channel-name', ablyId }, (message) => {
+useChannel({ channelName: 'your-channel-name', contextId }, (message) => {
   console.log(message);
 });
 
-usePresence({ channelName: 'your-channel-name', ablyId }, 'initial state');
+usePresence({ channelName: 'your-channel-name', contextId }, 'initial state');
 
-usePresenceListener({ channelName: 'your-channel-name', ablyId }, (presenceUpdate) => {
+usePresenceListener({ channelName: 'your-channel-name', contextId }, (presenceUpdate) => {
   // ...
 });
 ```

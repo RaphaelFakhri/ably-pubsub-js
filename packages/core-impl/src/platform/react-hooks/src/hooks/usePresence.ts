@@ -35,8 +35,8 @@ export function usePresence<T = any>(
         : { channelName: channelNameOrNameAndOptions };
   const skip = params.skip;
 
-  const ably = usePubSubClient(params.ablyId);
-  const { channel } = useChannelInstance(params.ablyId, params.channelName);
+  const ably = usePubSubClient(params.contextId);
+  const { channel } = useChannelInstance(params.contextId, params.channelName);
   const { connectionError, channelError } = useStateErrors(params);
 
   // we can't simply add messageOrPresenceObject to dependency list in our useCallback/useEffect hooks,
@@ -57,7 +57,7 @@ export function usePresence<T = any>(
     setChannelState(stateChange.current);
   });
 
-  const { connectionState } = useChannelAttach(channel, params.ablyId, skip);
+  const { connectionState } = useChannelAttach(channel, params.contextId, skip);
 
   const shouldNotEnterPresence =
     INACTIVE_CONNECTION_STATES.includes(connectionState) || INACTIVE_CHANNEL_STATES.includes(channelState) || skip;

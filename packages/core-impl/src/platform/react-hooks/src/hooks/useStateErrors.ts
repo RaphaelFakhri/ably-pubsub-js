@@ -16,7 +16,7 @@ export function useStateErrors(params: ChannelNameAndOptions) {
         setConnectionError(stateChange.reason);
       }
     },
-    params.ablyId,
+    params.contextId,
   );
 
   useConnectionStateListener(
@@ -24,7 +24,7 @@ export function useStateErrors(params: ChannelNameAndOptions) {
     () => {
       setConnectionError(null);
     },
-    params.ablyId,
+    params.contextId,
   );
 
   useChannelStateListener(params, ['suspended', 'failed', 'detached'], (stateChange) => {

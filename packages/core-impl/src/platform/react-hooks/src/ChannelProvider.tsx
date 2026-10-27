@@ -4,7 +4,7 @@ import { type PubSubContextValue, PubSubContext } from './PubSubContext.js';
 import { channelOptionsForReactHooks } from './PubSubReactHooks.js';
 
 interface ChannelProviderProps {
-  ablyId?: string;
+  contextId?: string;
   channelName: string;
   options?: Ably.ChannelOptions;
   deriveOptions?: Ably.DeriveOptions;
@@ -12,14 +12,14 @@ interface ChannelProviderProps {
 }
 
 export const ChannelProvider = ({
-  ablyId = 'default',
+  contextId = 'default',
   channelName,
   options,
   deriveOptions,
   children,
 }: ChannelProviderProps) => {
   const context = React.useContext(PubSubContext);
-  const { client, _channelNameToChannelContext } = context[ablyId];
+  const { client, _channelNameToChannelContext } = context[contextId];
 
   if (_channelNameToChannelContext[channelName]) {
     throw new Error('You can not use more than one `ChannelProvider` with the same channel name');
@@ -31,7 +31,7 @@ export const ChannelProvider = ({
   const value: PubSubContextValue = useMemo(() => {
     return {
       ...context,
-      [ablyId]: {
+      [contextId]: {
         client,
         _channelNameToChannelContext: {
           ..._channelNameToChannelContext,
@@ -43,7 +43,7 @@ export const ChannelProvider = ({
         _nearestChannelName: channelName,
       },
     };
-  }, [derived, client, channel, channelName, _channelNameToChannelContext, ablyId, context]);
+  }, [derived, client, channel, channelName, _channelNameToChannelContext, contextId, context]);
 
   useLayoutEffect(() => {
     channel.setOptions(channelOptionsForReactHooks(options));

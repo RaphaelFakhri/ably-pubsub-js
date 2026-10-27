@@ -12,7 +12,7 @@ export interface ChannelResult {
   channel: Ably.RealtimeChannel;
   publish: Ably.RealtimeChannel['publish'];
   history: Ably.RealtimeChannel['history'];
-  ably: Ably.PubSubRealtimeClient;
+  client: Ably.PubSubRealtimeClient;
   connectionError: Ably.ErrorInfo | null;
   channelError: Ably.ErrorInfo | null;
 }
@@ -53,20 +53,20 @@ export function useChannel(
         ? {}
         : { channelName: channelNameOrNameAndOptions };
 
-  const ably = usePubSubClient(channelHookOptions.ablyId);
+  const client = usePubSubClient(channelHookOptions.contextId);
   const { skip } = channelHookOptions;
 
   const { channel, derived, channelName } = useChannelInstance(
-    channelHookOptions.ablyId,
+    channelHookOptions.contextId,
     channelHookOptions.channelName,
   );
 
   const publish: Ably.RealtimeChannel['publish'] = useMemo(() => {
     if (!derived) return channel.publish.bind(channel);
-    const regularChannel = ably.channels.get(channelName);
+    const regularChannel = client.channels.get(channelName);
     // For derived channels we use transient publish (it won't attach to the channel)
     return regularChannel.publish.bind(regularChannel);
-  }, [ably.channels, derived, channel, channelName]);
+  }, [client.channels, derived, channel, channelName]);
 
   const channelEvent = typeof eventOrCallbackArg === 'string' ? eventOrCallbackArg : null;
   const pubSubMessageCallback = typeof eventOrCallbackArg === 'string' ? callback : eventOrCallbackArg;
@@ -106,9 +106,9 @@ export function useChannel(
     };
   }, [channelEvent, channel, skip]);
 
-  useChannelAttach(channel, channelHookOptions.ablyId, skip);
+  useChannelAttach(channel, channelHookOptions.contextId, skip);
 
-  return { channel, publish, history, ably, connectionError, channelError };
+  return { channel, publish, history, client, connectionError, channelError };
 }
 
 async function handleChannelMount(channel: Ably.RealtimeChannel, ...subscribeArgs: SubscribeArgs) {

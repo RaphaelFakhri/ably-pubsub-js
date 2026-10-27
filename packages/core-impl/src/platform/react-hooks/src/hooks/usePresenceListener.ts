@@ -48,7 +48,7 @@ export function usePresenceListener<T = any>(
         : { channelName: channelNameOrNameAndOptions };
   const skip = params.skip;
 
-  const { channel } = useChannelInstance(params.ablyId, params.channelName);
+  const { channel } = useChannelInstance(params.contextId, params.channelName);
   const { connectionError, channelError } = useStateErrors(params);
   const [presenceData, updatePresenceData] = useState<Array<PresenceMessage<T>>>([]);
 
@@ -86,7 +86,7 @@ export function usePresenceListener<T = any>(
     };
   }, [skip, onMount, onUnmount]);
 
-  useChannelAttach(channel, params.ablyId, skip);
+  useChannelAttach(channel, params.contextId, skip);
 
   return { presenceData, connectionError, channelError };
 }

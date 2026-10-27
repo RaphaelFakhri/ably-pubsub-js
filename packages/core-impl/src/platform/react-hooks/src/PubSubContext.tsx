@@ -8,7 +8,7 @@ import React from 'react';
 // This can lead to problems like having an Ably Channel instance added
 // in one context, and then attempting to retrieve it from another different context.
 // This is why a single Ably context is created and stored in the global state.
-const contextKey = Symbol.for('__ABLY_CONTEXT__');
+const contextKey = Symbol.for('__PUBSUB_CONTEXT__');
 
 const globalObjectForContext: { [contextKey]?: React.Context<PubSubContextValue> } =
   typeof globalThis !== 'undefined' ? (globalThis as any) : {};

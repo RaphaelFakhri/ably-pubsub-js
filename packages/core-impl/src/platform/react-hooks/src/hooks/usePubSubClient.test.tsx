@@ -34,7 +34,7 @@ describe('hooks called outside an PubSubClientProvider', () => {
     spy.mockRestore();
   });
 
-  it('usePubSubClient throws a descriptive error when the requested ablyId has no provider', () => {
+  it('usePubSubClient throws a descriptive error when the requested contextId has no provider', () => {
     const spy = silenceConsoleError();
     const client = new FakeAblySdk().connectTo(new FakeAblyChannels(['channel']));
     const wrapper = ({ children }: { children: React.ReactNode }) => (

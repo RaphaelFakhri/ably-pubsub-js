@@ -11,10 +11,10 @@ interface ChannelAttachResult {
 
 export function useChannelAttach(
   channel: Ably.RealtimeChannel,
-  ablyId: string | undefined,
+  contextId: string | undefined,
   skip: boolean,
 ): ChannelAttachResult {
-  const ably = usePubSubClient(ablyId);
+  const ably = usePubSubClient(contextId);
 
   // we need to listen for the current connection state in order to react to it.
   // for example, we should attach when first connected, re-enter when reconnected,
@@ -23,7 +23,7 @@ export function useChannelAttach(
   const [connectionState, setConnectionState] = useState(ably.connection.state);
   useConnectionStateListener((stateChange) => {
     setConnectionState(stateChange.current);
-  }, ablyId);
+  }, contextId);
 
   if (ably.connection.state !== connectionState) {
     setConnectionState(ably.connection.state);

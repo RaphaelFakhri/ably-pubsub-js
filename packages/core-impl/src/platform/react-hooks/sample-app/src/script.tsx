@@ -26,17 +26,17 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <PubSubClientProvider client={client}>
-      <PubSubClientProvider ablyId="rob" client={client}>
-        <PubSubClientProvider ablyId="frontOffice" client={client}>
+      <PubSubClientProvider contextId="rob" client={client}>
+        <PubSubClientProvider contextId="frontOffice" client={client}>
           <ChannelProvider channelName="your-channel-name" options={{ modes: ['PRESENCE', 'PUBLISH', 'SUBSCRIBE'] }}>
             <ChannelProvider channelName="your-derived-channel-name">
               <ChannelProvider
-                ablyId="rob"
+                contextId="rob"
                 channelName="your-derived-channel-name"
                 deriveOptions={{ filter: 'headers.email == `"rob.pike@domain.com"` || headers.company == `"domain"`' }}
               >
                 <ChannelProvider
-                  ablyId="frontOffice"
+                  contextId="frontOffice"
                   channelName="your-derived-channel-name"
                   deriveOptions={{ filter: 'headers.role == `"front-office"` || headers.company == `"domain"`' }}
                 >

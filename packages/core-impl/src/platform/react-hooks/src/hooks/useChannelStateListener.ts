@@ -1,5 +1,5 @@
 import * as Ably from '@ably/pubsub-core/api';
-import { ChannelNameAndAblyId } from '../PubSubReactHooks.js';
+import { ChannelNameAndContextId } from '../PubSubReactHooks.js';
 import { useEventListener } from './useEventListener.js';
 import { useChannelInstance } from './useChannelInstance.js';
 
@@ -10,39 +10,39 @@ export function useChannelStateListener(listener?: ChannelStateListener);
 
 export function useChannelStateListener(channelName: string, listener?: ChannelStateListener);
 
-export function useChannelStateListener(options: ChannelNameAndAblyId, listener?: ChannelStateListener);
+export function useChannelStateListener(options: ChannelNameAndContextId, listener?: ChannelStateListener);
 
 export function useChannelStateListener(
-  options: ChannelNameAndAblyId | string,
+  options: ChannelNameAndContextId | string,
   state?: Ably.ChannelState | Ably.ChannelState[],
   listener?: ChannelStateListener,
 );
 
 export function useChannelStateListener(
-  channelNameOrNameAndAblyIdOrListener?: ChannelNameAndAblyId | string | ChannelStateListener,
+  channelNameOrNameAndContextIdOrListener?: ChannelNameAndContextId | string | ChannelStateListener,
   stateOrListener?: Ably.ChannelState | Ably.ChannelState[] | ChannelStateListener,
   listener?: (stateChange: Ably.ChannelStateChange) => any,
 ) {
   // The first argument is the listener when the channel name is inferred from a
   // surrounding ChannelProvider, e.g. useChannelStateListener(listener).
-  const inferChannelFromNearestProvider = typeof channelNameOrNameAndAblyIdOrListener === 'function';
-  const channelNameOrNameAndAblyId = inferChannelFromNearestProvider
+  const inferChannelFromNearestProvider = typeof channelNameOrNameAndContextIdOrListener === 'function';
+  const channelNameOrNameAndContextId = inferChannelFromNearestProvider
     ? undefined
-    : (channelNameOrNameAndAblyIdOrListener as ChannelNameAndAblyId | string | undefined);
+    : (channelNameOrNameAndContextIdOrListener as ChannelNameAndContextId | string | undefined);
   const stateOrListenerArg = inferChannelFromNearestProvider
-    ? (channelNameOrNameAndAblyIdOrListener as ChannelStateListener)
+    ? (channelNameOrNameAndContextIdOrListener as ChannelStateListener)
     : stateOrListener;
 
   const channelHookOptions =
-    typeof channelNameOrNameAndAblyId === 'object'
-      ? channelNameOrNameAndAblyId
-      : channelNameOrNameAndAblyId === undefined
+    typeof channelNameOrNameAndContextId === 'object'
+      ? channelNameOrNameAndContextId
+      : channelNameOrNameAndContextId === undefined
         ? {}
-        : { channelName: channelNameOrNameAndAblyId };
+        : { channelName: channelNameOrNameAndContextId };
 
-  const { ablyId, channelName } = channelHookOptions;
+  const { contextId, channelName } = channelHookOptions;
 
-  const { channel } = useChannelInstance(ablyId, channelName);
+  const { channel } = useChannelInstance(contextId, channelName);
 
   const _listener =
     typeof listener === 'function'

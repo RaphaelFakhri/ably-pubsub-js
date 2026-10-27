@@ -109,8 +109,8 @@ describe('usePresence', () => {
 
     renderInCtxProvider(
       ablyClient,
-      <PubSubClientProvider ablyId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
-        <ChannelProvider channelName={testChannelName} ablyId="otherClient">
+      <PubSubClientProvider contextId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
+        <ChannelProvider channelName={testChannelName} contextId="otherClient">
           <UsePresenceComponentMultipleClients />
         </ChannelProvider>
       </PubSubClientProvider>,
@@ -134,8 +134,8 @@ describe('usePresence', () => {
     ablyClient.channels.get(testChannelName).presence.subscribe('update', updateListener);
 
     render(
-      <PubSubClientProvider ablyId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
-        <ChannelProvider channelName={testChannelName} ablyId="otherClient">
+      <PubSubClientProvider contextId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
+        <ChannelProvider channelName={testChannelName} contextId="otherClient">
           <UsePresenceComponentWithOtherClient />
         </ChannelProvider>
       </PubSubClientProvider>,
@@ -254,7 +254,7 @@ const UsePresenceComponent = ({ skip }: { skip?: boolean }) => {
 
 const UsePresenceComponentMultipleClients = () => {
   const { updateStatus: update1 } = usePresence({ channelName: testChannelName }, 'foo');
-  const { updateStatus: update2 } = usePresence({ channelName: testChannelName, ablyId: 'otherClient' }, 'bar');
+  const { updateStatus: update2 } = usePresence({ channelName: testChannelName, contextId: 'otherClient' }, 'bar');
 
   return (
     <>
@@ -271,7 +271,7 @@ const UsePresenceComponentMultipleClients = () => {
 };
 
 const UsePresenceComponentWithOtherClient = () => {
-  const { updateStatus } = usePresence({ channelName: testChannelName, ablyId: 'otherClient' }, 'bar');
+  const { updateStatus } = usePresence({ channelName: testChannelName, contextId: 'otherClient' }, 'bar');
 
   return (
     <>

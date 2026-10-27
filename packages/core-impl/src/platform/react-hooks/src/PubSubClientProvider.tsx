@@ -5,10 +5,10 @@ import { PubSubContext, PubSubContextValue } from './PubSubContext.js';
 interface PubSubClientProviderProps {
   children?: React.ReactNode | React.ReactNode[] | null;
   client?: Ably.PubSubRealtimeClient;
-  ablyId?: string;
+  contextId?: string;
 }
 
-export const PubSubClientProvider = ({ client, children, ablyId = 'default' }: PubSubClientProviderProps) => {
+export const PubSubClientProvider = ({ client, children, contextId = 'default' }: PubSubClientProviderProps) => {
   if (!client) {
     throw new Error('PubSubClientProvider: the `client` prop is required');
   }
@@ -16,8 +16,8 @@ export const PubSubClientProvider = ({ client, children, ablyId = 'default' }: P
   const context = React.useContext(PubSubContext);
 
   const value: PubSubContextValue = useMemo(() => {
-    return { ...context, [ablyId]: { client, _channelNameToChannelContext: {} } };
-  }, [context, client, ablyId]);
+    return { ...context, [contextId]: { client, _channelNameToChannelContext: {} } };
+  }, [context, client, contextId]);
 
   return <PubSubContext.Provider value={value}>{children}</PubSubContext.Provider>;
 };
