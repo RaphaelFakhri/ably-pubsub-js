@@ -46,7 +46,7 @@ import type {
 /* eslint-enable no-unused-vars, @typescript-eslint/no-unused-vars */
 
 /**
- * Contains the details of a {@link Channel} or {@link RealtimeChannel} object such as its ID and {@link ChannelStatus}.
+ * Contains the details of a {@link HttpChannel} or {@link RealtimeChannel} object such as its ID and {@link ChannelStatus}.
  */
 export interface ChannelDetails {
   /**
@@ -60,7 +60,7 @@ export interface ChannelDetails {
 }
 
 /**
- * Contains the status of a {@link Channel} or {@link RealtimeChannel} object such as whether it is active and its {@link ChannelOccupancy}.
+ * Contains the status of a {@link HttpChannel} or {@link RealtimeChannel} object such as whether it is active and its {@link ChannelOccupancy}.
  */
 export interface ChannelStatus {
   /**
@@ -74,7 +74,7 @@ export interface ChannelStatus {
 }
 
 /**
- * Contains the metrics of a {@link Channel} or {@link RealtimeChannel} object.
+ * Contains the metrics of a {@link HttpChannel} or {@link RealtimeChannel} object.
  */
 export interface ChannelOccupancy {
   /**
@@ -84,7 +84,7 @@ export interface ChannelOccupancy {
 }
 
 /**
- * Contains the metrics associated with a {@link Channel} or {@link RealtimeChannel}, such as the number of publishers, subscribers and connections it has.
+ * Contains the metrics associated with a {@link HttpChannel} or {@link RealtimeChannel}, such as the number of publishers, subscribers and connections it has.
  */
 export interface ChannelMetrics {
   /**
@@ -116,8 +116,8 @@ export interface ChannelMetrics {
 /**
  * The `HttpHistoryParams` interface describes the parameters accepted by the following methods:
  *
- * - {@link Presence.history}
- * - {@link Channel.history}
+ * - {@link HttpPresence.history}
+ * - {@link HttpChannel.history}
  */
 export interface HttpHistoryParams {
   /**
@@ -145,7 +145,7 @@ export interface HttpHistoryParams {
 }
 
 /**
- * The `HttpPresenceParams` interface describes the parameters accepted by {@link Presence.get}.
+ * The `HttpPresenceParams` interface describes the parameters accepted by {@link HttpPresence.get}.
  */
 export interface HttpPresenceParams {
   /**
@@ -176,7 +176,7 @@ export declare interface PubSubHttpClient {
   /**
    * A {@link Channels} object.
    */
-  channels: Channels<Channel>;
+  channels: Channels<HttpChannel>;
   /**
    * Makes a REST request to a provided path. This is provided as a convenience for developers who wish to use REST API functionality that is either not documented or is not yet included in the public API, without having to directly handle features such as authentication, paging, fallback hosts, MsgPack and JSON support.
    *
@@ -248,7 +248,7 @@ export declare interface PubSubHttpClient {
 /**
  * Enables the retrieval of the current and historic presence set for a channel.
  */
-export declare interface Presence {
+export declare interface HttpPresence {
   /**
    * Retrieves the current members present on the channel and the metadata for each member, such as their {@link PresenceAction} and ID. Returns a {@link PaginatedResult} object, containing an array of {@link PresenceMessage} objects.
    *
@@ -270,16 +270,16 @@ export declare interface Presence {
 /**
  * Enables messages to be published and historic messages to be retrieved for a channel.
  */
-export declare interface Channel {
+export declare interface HttpChannel {
   /**
    * The channel name.
    */
   name: string;
 
   /**
-   * A {@link Presence} object.
+   * A {@link HttpPresence} object.
    */
-  presence: Presence;
+  presence: HttpPresence;
   /**
    * {@link HttpAnnotations}
    */

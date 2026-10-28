@@ -46,7 +46,7 @@ declare namespace ChannelStates {
   type FAILED = 'failed';
 }
 /**
- * Describes the possible states of a {@link Channel} or {@link RealtimeChannel} object.
+ * Describes the possible states of a {@link HttpChannel} or {@link RealtimeChannel} object.
  */
 export type ChannelState =
   | ChannelStates.FAILED
@@ -95,7 +95,7 @@ declare namespace ChannelEvents {
   type UPDATE = 'update';
 }
 /**
- * Describes the events emitted by a {@link Channel} or {@link RealtimeChannel} object. An event is either an `UPDATE` or a {@link ChannelState}.
+ * Describes the events emitted by a {@link HttpChannel} or {@link RealtimeChannel} object. An event is either an `UPDATE` or a {@link ChannelState}.
  */
 export type ChannelEvent =
   | ChannelEvents.FAILED
@@ -710,7 +710,7 @@ export interface TokenParams {
 }
 
 /**
- * Sets the properties to configure encryption for a {@link Channel} or {@link RealtimeChannel} object.
+ * Sets the properties to configure encryption for a {@link HttpChannel} or {@link RealtimeChannel} object.
  */
 export interface CipherParams {
   /**
@@ -916,7 +916,7 @@ export type ResolvedChannelMode =
   | ResolvedChannelModes.ANNOTATION_SUBSCRIBE;
 
 /**
- * Passes additional properties to a {@link Channel} or {@link RealtimeChannel} object, such as encryption, {@link ChannelMode} and channel parameters.
+ * Passes additional properties to a {@link HttpChannel} or {@link RealtimeChannel} object, such as encryption, {@link ChannelMode} and channel parameters.
  */
 export interface ChannelOptions {
   /**
@@ -1018,7 +1018,7 @@ export interface RealtimeHistoryParams {
 }
 
 /**
- * Contains state change information emitted by {@link Channel} and {@link RealtimeChannel} objects.
+ * Contains state change information emitted by {@link HttpChannel} and {@link RealtimeChannel} objects.
  */
 export interface ChannelStateChange {
   /**
@@ -2707,19 +2707,19 @@ export type MessageFilter = {
 };
 
 /**
- * Creates and destroys {@link Channel} and {@link RealtimeChannel} objects.
+ * Creates and destroys {@link HttpChannel} and {@link RealtimeChannel} objects.
  */
 export declare interface Channels<T> {
   /**
-   * Creates a new {@link Channel} or {@link RealtimeChannel} object, with the specified {@link ChannelOptions}, or returns the existing channel object.
+   * Creates a new {@link HttpChannel} or {@link RealtimeChannel} object, with the specified {@link ChannelOptions}, or returns the existing channel object.
    *
    * @param name - The channel name.
    * @param channelOptions - A {@link ChannelOptions} object.
-   * @returns A {@link Channel} or {@link RealtimeChannel} object.
+   * @returns A {@link HttpChannel} or {@link RealtimeChannel} object.
    */
   get(name: string, channelOptions?: ChannelOptions): T;
   /**
-   * Creates a new {@link Channel} or {@link RealtimeChannel} object, with the specified channel {@link DeriveOptions}
+   * Creates a new {@link HttpChannel} or {@link RealtimeChannel} object, with the specified channel {@link DeriveOptions}
    * and {@link ChannelOptions}, or returns the existing channel object.
    *
    * @experimental This is a preview feature and may change in a future non-major release.
@@ -2733,7 +2733,7 @@ export declare interface Channels<T> {
    */
   getDerived(name: string, deriveOptions: DeriveOptions, channelOptions?: ChannelOptions): T;
   /**
-   * Releases all SDK-held references to a {@link Channel} or {@link RealtimeChannel} object, enabling it to be garbage collected. Warning: this method has no guardrails; using a channel reference after it has been released is undefined behaviour. It can be useful for applications that work with a continually changing set of channels on a single client and need to avoid unbounded memory growth; if this does not describe you, don't call it. A realtime channel can only be released when it is in the `INITIALIZED`, `DETACHED`, or `FAILED` state.
+   * Releases all SDK-held references to a {@link HttpChannel} or {@link RealtimeChannel} object, enabling it to be garbage collected. Warning: this method has no guardrails; using a channel reference after it has been released is undefined behaviour. It can be useful for applications that work with a continually changing set of channels on a single client and need to avoid unbounded memory growth; if this does not describe you, don't call it. A realtime channel can only be released when it is in the `INITIALIZED`, `DETACHED`, or `FAILED` state.
    *
    * @param name - The channel name.
    */

@@ -280,6 +280,8 @@ In the main API surface:
 | `RestClient`         | `PubSubHttpClient`   |
 | `RestAnnotations`    | `HttpAnnotations`    |
 | `RestHistoryParams`  | `HttpHistoryParams`  |
+| `Channel`            | `HttpChannel`        |
+| `Presence`           | `HttpPresence`       |
 | `RestPresenceParams` | `HttpPresenceParams` |
 
 In the modular variant:

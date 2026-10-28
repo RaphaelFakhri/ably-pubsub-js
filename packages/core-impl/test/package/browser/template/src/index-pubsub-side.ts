@@ -201,13 +201,13 @@ globalThis.testAblyPackage = async function () {
   // @ts-expect-error
   type DeviceHttpClient = PubSubDevice.PubSubHttpClient;
   // @ts-expect-error
-  type DeviceRestChannel = PubSubDevice.Channel;
+  type DeviceHttpChannel = PubSubDevice.HttpChannel;
   // @ts-expect-error
   void PubSubDeviceModular.BaseRealtime;
   // @ts-expect-error
   void PubSubDeviceModular.BaseHttp;
-  const serverRestChannel: PubSubServer.Channel = serverHttp.channels.get('channel');
-  void serverRestChannel;
+  const serverHttpChannel: PubSubServer.HttpChannel = serverHttp.channels.get('channel');
+  void serverHttpChannel;
 
   // Check the re-exported error type is the core's, so instanceof works across the boundary.
   const error: PubSubDevice.ErrorInfo = new PubSubDevice.ErrorInfo('message', 40000, 400);

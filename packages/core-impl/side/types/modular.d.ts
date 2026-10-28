@@ -13,7 +13,7 @@ import type {
   PubSubRealtimeClient,
   Auth,
   Channels,
-  Channel,
+  HttpChannel,
   RealtimeChannel,
   Connection,
   HttpPaginatedResponse,
@@ -41,7 +41,7 @@ export declare class BaseHttp implements PubSubHttpClient {
   constructor(options: ClientOptions<CorePlugins & ModularPlugins>);
 
   auth: Auth;
-  channels: Channels<Channel>;
+  channels: Channels<HttpChannel>;
   request<T = any>(
     method: string,
     path: string,
