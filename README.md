@@ -69,10 +69,10 @@ Choosing between them tells Ably which side of the connection a client is on. Th
 
 The rest of this README uses `@ably/pubsub-device` in its examples. Every one of them works identically with `@ably/pubsub-server`; only the import changes.
 
-You can also source the SDK directly in your HTML. (This url will point to the latest version of v2 of the SDK, the current major version, avoiding breaking changes per semver.)
+You can also source the SDK directly in your HTML. (This url will point to the latest version of v3 of the SDK, the current major version, avoiding breaking changes per semver.)
 
 ```html
-<script src="https://cdn.ably.com/lib/ably.min-2.js"></script>
+<script src="https://cdn.ably.com/lib/ably.min-3.js"></script>
 <script>
   const realtimeClient = AblyPubSub.createClient({ key: 'your-ably-api-key', clientId: 'me' });
 </script>

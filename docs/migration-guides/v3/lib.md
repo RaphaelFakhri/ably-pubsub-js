@@ -122,9 +122,11 @@ The stateless HTTP client is a server-side concern, and `@ably/pubsub-device` do
 
 The client from `@ably/pubsub-device` logs errors only: every log below error level is stripped from it, so raising `logLevel` there shows nothing more. To see the full logs while developing an app, import `createClient` from `@ably/pubsub-device/debug`, which is the same client from a build that keeps every log. `@ably/pubsub-server` keeps every log.
 
-If you source the SDK from the CDN rather than npm, the file names are unchanged, but the bundle is now `@ably/pubsub-device`, exposed as the global `AblyPubSub` rather than `Ably`. That global exposes `createClient` rather than the client classes, and the clients it creates declare the device side:
+If you source the SDK from the CDN rather than npm, load the v3 bundle, `https://cdn.ably.com/lib/ably.min-3.js`, in place of `ably.min-2.js`. The bundle is now `@ably/pubsub-device`, exposed as the global `AblyPubSub` rather than `Ably`. That global exposes `createClient` rather than the client classes, and the clients it creates declare the device side:
 
 ```diff
+- <script src="https://cdn.ably.com/lib/ably.min-2.js"></script>
++ <script src="https://cdn.ably.com/lib/ably.min-3.js"></script>
 - const client = new Ably.Realtime({ key, clientId: 'me' });
 + const client = AblyPubSub.createClient({ key, clientId: 'me' });
 ```
