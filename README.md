@@ -226,7 +226,7 @@ To prevent server-side connections, create the Ably client inside a `useEffect` 
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@ably/pubsub-device';
-import { AblyProvider } from '@ably/pubsub-device/react';
+import { PubSubClientProvider } from '@ably/pubsub-device/react';
 
 export default function AblyClientProvider({ children }) {
   const [client, setClient] = useState(null);
@@ -241,7 +241,7 @@ export default function AblyClientProvider({ children }) {
 
   if (!client) return <div>Loading...</div>;
 
-  return <AblyProvider client={client}>{children}</AblyProvider>;
+  return <PubSubClientProvider client={client}>{children}</PubSubClientProvider>;
 }
 ```
 

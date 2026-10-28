@@ -5,14 +5,14 @@ import { render, renderHook, screen, waitFor } from '@testing-library/react';
 import { FakeAblySdk, FakeAblyChannels } from '../fakes/ably.js';
 import * as Ably from '@ably/pubsub-core';
 import { act } from 'react-dom/test-utils';
-import { AblyProvider } from '../AblyProvider.js';
+import { PubSubClientProvider } from '../PubSubClientProvider.js';
 import { ChannelProvider } from '../ChannelProvider.js';
 
 function renderInCtxProvider(client: FakeAblySdk, children: React.ReactNode | React.ReactNode[]) {
   return render(
-    <AblyProvider client={client as unknown as Ably.PubSubRealtimeClient}>
+    <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>
       <ChannelProvider channelName="blah">{children}</ChannelProvider>
-    </AblyProvider>,
+    </PubSubClientProvider>,
   );
 }
 
@@ -66,11 +66,11 @@ describe('useChannel', () => {
   it('useChannel works with multiple clients', async () => {
     renderInCtxProvider(
       ablyClient,
-      <AblyProvider client={otherClient as unknown as Ably.PubSubRealtimeClient} ablyId="otherClient">
-        <ChannelProvider channelName="bleh" ablyId="otherClient">
+      <PubSubClientProvider client={otherClient as unknown as Ably.PubSubRealtimeClient} contextId="otherClient">
+        <ChannelProvider channelName="bleh" contextId="otherClient">
           <UseChannelComponentMultipleClients />
         </ChannelProvider>
-      </AblyProvider>,
+      </PubSubClientProvider>,
     );
 
     await act(async () => {
@@ -137,9 +137,9 @@ describe('useChannel', () => {
   it('history function is returned and callable', async () => {
     const { result } = renderHook(() => useChannel('blah'), {
       wrapper: ({ children }) => (
-        <AblyProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
+        <PubSubClientProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
           <ChannelProvider channelName="blah">{children}</ChannelProvider>
-        </AblyProvider>
+        </PubSubClientProvider>
       ),
     });
 
@@ -156,9 +156,9 @@ describe('useChannel', () => {
   it('history returns previously published messages', async () => {
     const { result } = renderHook(() => useChannel('blah'), {
       wrapper: ({ children }) => (
-        <AblyProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
+        <PubSubClientProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
           <ChannelProvider channelName="blah">{children}</ChannelProvider>
-        </AblyProvider>
+        </PubSubClientProvider>
       ),
     });
 
@@ -175,9 +175,9 @@ describe('useChannel', () => {
   it('history with params delegates to channel.history', async () => {
     const { result } = renderHook(() => useChannel('blah'), {
       wrapper: ({ children }) => (
-        <AblyProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
+        <PubSubClientProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
           <ChannelProvider channelName="blah">{children}</ChannelProvider>
-        </AblyProvider>
+        </PubSubClientProvider>
       ),
     });
 
@@ -194,9 +194,9 @@ describe('useChannel', () => {
   it('history has referential stability across re-renders', async () => {
     const { result, rerender } = renderHook(() => useChannel('blah'), {
       wrapper: ({ children }) => (
-        <AblyProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
+        <PubSubClientProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
           <ChannelProvider channelName="blah">{children}</ChannelProvider>
-        </AblyProvider>
+        </PubSubClientProvider>
       ),
     });
 
@@ -293,11 +293,11 @@ describe('useChannel with deriveOptions', () => {
   it('component can use "publish" for channel with "deriveOptions"', async () => {
     const { result } = renderHook(() => useChannel('blah'), {
       wrapper: ({ children }) => (
-        <AblyProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
+        <PubSubClientProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
           <ChannelProvider channelName="blah" deriveOptions={{ filter: 'headers.user == `"robert.pike@domain.io"`' }}>
             {children}
           </ChannelProvider>
-        </AblyProvider>
+        </PubSubClientProvider>
       ),
     });
 
@@ -396,17 +396,17 @@ describe('useChannel with deriveOptions', () => {
     const anotherClientId = 'anotherClient';
 
     render(
-      <AblyProvider client={ablyClient as unknown as Ably.RealtimePromise} ablyId={cliendId}>
-        <AblyProvider client={anotherClient as unknown as Ably.RealtimePromise} ablyId={anotherClientId}>
+      <PubSubClientProvider client={ablyClient as unknown as Ably.RealtimePromise} contextId={cliendId}>
+        <PubSubClientProvider client={anotherClient as unknown as Ably.RealtimePromise} contextId={anotherClientId}>
           <ChannelProvider
-            ablyId={cliendId}
+            contextId={cliendId}
             channelName={Channels.tasks}
             deriveOptions={{
               filter: 'headers.user == `"robert.griesemer@domain.io"` || headers.company == `"domain"`',
             }}
           >
             <ChannelProvider
-              ablyId={anotherClientId}
+              contextId={anotherClientId}
               channelName={Channels.alerts}
               deriveOptions={{
                 filter: 'headers.user == `"robert.griesemer@domain.io"` || headers.company == `"domain"`',
@@ -420,8 +420,8 @@ describe('useChannel with deriveOptions', () => {
               />
             </ChannelProvider>
           </ChannelProvider>
-        </AblyProvider>
-      </AblyProvider>,
+        </PubSubClientProvider>
+      </PubSubClientProvider>,
     );
 
     act(() => {
@@ -580,14 +580,14 @@ describe('useChannel with deriveOptions', () => {
   it('history function works with derived channels', async () => {
     const { result } = renderHook(() => useChannel(Channels.tasks), {
       wrapper: ({ children }) => (
-        <AblyProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
+        <PubSubClientProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
           <ChannelProvider
             channelName={Channels.tasks}
             deriveOptions={{ filter: 'headers.user == `"robert.pike@domain.io"`' }}
           >
             {children}
           </ChannelProvider>
-        </AblyProvider>
+        </PubSubClientProvider>
       ),
     });
 
@@ -635,7 +635,7 @@ const UseChannelComponentMultipleClients = () => {
   useChannel({ channelName: 'blah' }, (message) => {
     updateMessages((prev) => [...prev, message]);
   });
-  useChannel({ channelName: 'bleh', ablyId: 'otherClient' }, (message) => {
+  useChannel({ channelName: 'bleh', contextId: 'otherClient' }, (message) => {
     updateMessages((prev) => [...prev, message]);
   });
 
@@ -669,10 +669,10 @@ const UseDerivedChannelComponentMultipleClients = ({
   anotherChannelName,
 }: UseDerivedChannelComponentMultipleClientsProps) => {
   const [messages, setMessages] = useState<Ably.Message[]>([]);
-  useChannel({ ablyId: clientId, channelName }, (message) => {
+  useChannel({ contextId: clientId, channelName }, (message) => {
     setMessages((prev) => [...prev, message]);
   });
-  useChannel({ ablyId: anotherClientId, channelName: anotherChannelName }, (message) => {
+  useChannel({ contextId: anotherClientId, channelName: anotherChannelName }, (message) => {
     setMessages((prev) => [...prev, message]);
   });
 

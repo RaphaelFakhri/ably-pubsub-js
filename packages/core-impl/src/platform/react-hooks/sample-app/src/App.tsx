@@ -6,7 +6,7 @@ import {
   usePresenceListener,
   useConnectionStateListener,
   useChannelStateListener,
-  useAbly,
+  usePubSubClient,
 } from '../../src/index.js';
 import './App.css';
 
@@ -16,14 +16,14 @@ function App() {
   const [frontOficeOnlyMessages, updateFrontOfficeOnlyMessages] = useState<Ably.Message[]>([]);
 
   const [skip, setSkip] = useState(false);
-  const { channel, publish, ably } = useChannel({ channelName: 'your-channel-name', skip }, (message) => {
+  const { channel, publish, client } = useChannel({ channelName: 'your-channel-name', skip }, (message) => {
     updateMessages((prev) => [...prev, message]);
   });
 
   useChannel(
     {
       channelName: 'your-derived-channel-name',
-      ablyId: 'rob',
+      contextId: 'rob',
     },
     (message) => {
       updateDerivedChannelMessages((prev) => [...prev, message]);
@@ -33,7 +33,7 @@ function App() {
   useChannel(
     {
       channelName: 'your-derived-channel-name',
-      ablyId: 'frontOffice',
+      contextId: 'frontOffice',
     },
     (message) => {
       updateFrontOfficeOnlyMessages((prev) => [...prev, message]);
@@ -49,7 +49,7 @@ function App() {
     console.log(update);
   });
 
-  const [, setConnectionState] = useState(ably.connection.state);
+  const [, setConnectionState] = useState(client.connection.state);
 
   useConnectionStateListener((stateChange) => {
     setConnectionState(stateChange.current);
@@ -163,7 +163,7 @@ function App() {
         <button onClick={() => setSkip(!skip)}>Toggle skip param</button>
         <h2>Channel detach</h2>
         <button onClick={() => channel.detach()}>Detach</button>
-        <button onClick={() => ably.close()}>Close</button>
+        <button onClick={() => client.close()}>Close</button>
 
         <h2>Channel State</h2>
         <h3>Current</h3>
@@ -198,7 +198,7 @@ function MessagePreview({ message }: { message: Ably.Message }) {
 }
 
 function ConnectionState() {
-  const ably = useAbly();
+  const ably = usePubSubClient();
   const [connectionState, setConnectionState] = useState(ably.connection.state);
   const [connectionError, setConnectionError] = useState<Ably.ErrorInfo | null>(null);
   useConnectionStateListener((stateChange) => {

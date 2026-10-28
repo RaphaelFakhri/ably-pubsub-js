@@ -1,6 +1,6 @@
 import type * as Ably from '@ably/pubsub-core/api';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ChannelParameters } from '../AblyReactHooks.js';
+import { ChannelParameters } from '../PubSubReactHooks.js';
 import { useChannelInstance } from './useChannelInstance.js';
 import { useStateErrors } from './useStateErrors.js';
 import { useChannelAttach } from './useChannelAttach.js';
@@ -48,7 +48,7 @@ export function usePresenceListener<T = any>(
         : { channelName: channelNameOrNameAndOptions };
   const skip = params.skip;
 
-  const { channel } = useChannelInstance(params.ablyId, params.channelName);
+  const { channel } = useChannelInstance(params.contextId, params.channelName);
   const { connectionError, channelError } = useStateErrors(params);
   const [presenceData, updatePresenceData] = useState<Array<PresenceMessage<T>>>([]);
 
@@ -86,7 +86,7 @@ export function usePresenceListener<T = any>(
     };
   }, [skip, onMount, onUnmount]);
 
-  useChannelAttach(channel, params.ablyId, skip);
+  useChannelAttach(channel, params.contextId, skip);
 
   return { presenceData, connectionError, channelError };
 }

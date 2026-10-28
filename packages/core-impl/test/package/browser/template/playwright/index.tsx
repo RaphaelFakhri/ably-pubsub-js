@@ -1,6 +1,6 @@
 import { beforeMount } from '@playwright/experimental-ct-react/hooks';
 import { createClient } from '@ably/pubsub-device';
-import { AblyProvider, ChannelProvider } from '@ably/pubsub-device/react';
+import { PubSubClientProvider, ChannelProvider } from '@ably/pubsub-device/react';
 
 import { createSandboxAblyAPIKey } from '../src/sandbox';
 
@@ -13,10 +13,10 @@ beforeMount(async ({ App }) => {
   });
 
   return (
-    <AblyProvider client={client}>
+    <PubSubClientProvider client={client}>
       <ChannelProvider channelName="channel">
         <App />
       </ChannelProvider>
-    </AblyProvider>
+    </PubSubClientProvider>
   );
 });

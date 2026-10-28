@@ -9,7 +9,7 @@ export function App() {
   const [messages, updateMessages] = useState<Ably.Message[]>([]);
 
   // check that we can use ably/react exported members
-  const { channel, ably } = useChannel({ channelName: 'channel' }, (message) => {
+  const { channel, client } = useChannel({ channelName: 'channel' }, (message) => {
     updateMessages((prev) => [...prev, message]);
   });
 

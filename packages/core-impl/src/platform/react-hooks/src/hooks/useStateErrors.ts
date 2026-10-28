@@ -2,7 +2,7 @@ import type { ErrorInfo } from '@ably/pubsub-core/api';
 import { useState } from 'react';
 import { useConnectionStateListener } from './useConnectionStateListener.js';
 import { useChannelStateListener } from './useChannelStateListener.js';
-import { ChannelNameAndOptions } from '../AblyReactHooks.js';
+import { ChannelNameAndOptions } from '../PubSubReactHooks.js';
 
 export function useStateErrors(params: ChannelNameAndOptions) {
   const [connectionError, setConnectionError] = useState<ErrorInfo | null>(null);
@@ -16,7 +16,7 @@ export function useStateErrors(params: ChannelNameAndOptions) {
         setConnectionError(stateChange.reason);
       }
     },
-    params.ablyId,
+    params.contextId,
   );
 
   useConnectionStateListener(
@@ -24,7 +24,7 @@ export function useStateErrors(params: ChannelNameAndOptions) {
     () => {
       setConnectionError(null);
     },
-    params.ablyId,
+    params.contextId,
   );
 
   useChannelStateListener(params, ['suspended', 'failed', 'detached'], (stateChange) => {

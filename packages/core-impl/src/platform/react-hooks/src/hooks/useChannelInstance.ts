@@ -1,18 +1,19 @@
 import React from 'react';
-import { AblyContext, ChannelContextProps } from '../AblyContext.js';
+import { PubSubContext, ChannelContextProps } from '../PubSubContext.js';
 
 export type ResolvedChannelContextProps = ChannelContextProps & { channelName: string };
 
-export function useChannelInstance(ablyId = 'default', channelName?: string): ResolvedChannelContextProps {
-  const ablyContext = React.useContext(AblyContext)[ablyId];
+export function useChannelInstance(contextId = 'default', channelName?: string): ResolvedChannelContextProps {
+  const pubSubContext = React.useContext(PubSubContext)[contextId];
 
-  if (!ablyContext) {
+  if (!pubSubContext) {
     throw new Error(
-      'Could not find ably client in context. ' + 'Make sure your ably hooks are called inside an <AblyProvider>',
+      'Could not find ably client in context. ' +
+        'Make sure your ably hooks are called inside an <PubSubClientProvider>',
     );
   }
 
-  const { _channelNameToChannelContext, _nearestChannelName } = ablyContext;
+  const { _channelNameToChannelContext, _nearestChannelName } = pubSubContext;
 
   // When no channel name is provided, resolve to the channel named by the
   // closest enclosing `ChannelProvider`.

@@ -4,7 +4,7 @@ import { render, renderHook, screen } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import * as Ably from '@ably/pubsub-core';
 import { FakeAblySdk, FakeAblyChannels } from '../fakes/ably.js';
-import { AblyProvider } from '../AblyProvider.js';
+import { PubSubClientProvider } from '../PubSubClientProvider.js';
 import { ChannelProvider } from '../ChannelProvider.js';
 import { useChannel } from './useChannel.js';
 import { usePresence } from './usePresence.js';
@@ -26,9 +26,9 @@ describe('inferring the channel name from the nearest ChannelProvider', () => {
 
   const wrapInProviders = (channelName: string, children: React.ReactNode) =>
     render(
-      <AblyProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
+      <PubSubClientProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
         <ChannelProvider channelName={channelName}>{children}</ChannelProvider>
-      </AblyProvider>,
+      </PubSubClientProvider>,
     );
 
   /** @nospec */
@@ -60,9 +60,9 @@ describe('inferring the channel name from the nearest ChannelProvider', () => {
   it('useChannel() returns a publish bound to the surrounding channel', async () => {
     const { result } = renderHook(() => useChannel(), {
       wrapper: ({ children }) => (
-        <AblyProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
+        <PubSubClientProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
           <ChannelProvider channelName="inner">{children}</ChannelProvider>
-        </AblyProvider>
+        </PubSubClientProvider>
       ),
     });
 
@@ -74,11 +74,11 @@ describe('inferring the channel name from the nearest ChannelProvider', () => {
   it('useChannel() publish works for a derived surrounding channel', async () => {
     const { result } = renderHook(() => useChannel(), {
       wrapper: ({ children }) => (
-        <AblyProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
+        <PubSubClientProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
           <ChannelProvider channelName="inner" deriveOptions={{ filter: 'headers.user == `"robert.pike@domain.io"`' }}>
             {children}
           </ChannelProvider>
-        </AblyProvider>
+        </PubSubClientProvider>
       ),
     });
 
@@ -105,13 +105,13 @@ describe('inferring the channel name from the nearest ChannelProvider', () => {
     };
 
     render(
-      <AblyProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
+      <PubSubClientProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
         <ChannelProvider channelName="outer">
           <ChannelProvider channelName="inner">
             <Component />
           </ChannelProvider>
         </ChannelProvider>
-      </AblyProvider>,
+      </PubSubClientProvider>,
     );
 
     await act(async () => {
@@ -139,13 +139,13 @@ describe('inferring the channel name from the nearest ChannelProvider', () => {
     };
 
     render(
-      <AblyProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
+      <PubSubClientProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
         <ChannelProvider channelName="outer">
           <ChannelProvider channelName="inner">
             <Component />
           </ChannelProvider>
         </ChannelProvider>
-      </AblyProvider>,
+      </PubSubClientProvider>,
     );
 
     await act(async () => {
@@ -169,9 +169,9 @@ describe('inferring the channel name from the nearest ChannelProvider', () => {
     try {
       expect(() =>
         render(
-          <AblyProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
+          <PubSubClientProvider client={ablyClient as unknown as Ably.PubSubRealtimeClient}>
             <Component />
-          </AblyProvider>,
+          </PubSubClientProvider>,
         ),
       ).toThrowError(/no parent ChannelProvider to infer one from/);
     } finally {

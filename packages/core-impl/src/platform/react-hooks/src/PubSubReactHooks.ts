@@ -4,18 +4,18 @@ export type ChannelNameAndOptions = {
   /**
    * The name of the channel to use. When omitted, channel hooks resolve to the
    * channel named by the closest enclosing `ChannelProvider`. Resolution is
-   * scoped by `ablyId`, so a channel is only inferred from a `ChannelProvider`
-   * that uses the same `ablyId` (the `default` one when none is provided).
+   * scoped by `contextId`, so a channel is only inferred from a `ChannelProvider`
+   * that uses the same `contextId` (the `default` one when none is provided).
    */
   channelName?: string;
-  ablyId?: string;
+  contextId?: string;
   skip?: boolean;
 
   onConnectionError?: (error: Ably.ErrorInfo) => unknown;
   onChannelError?: (error: Ably.ErrorInfo) => unknown;
 };
 
-export type ChannelNameAndAblyId = Pick<ChannelNameAndOptions, 'channelName' | 'ablyId'>;
+export type ChannelNameAndContextId = Pick<ChannelNameAndOptions, 'channelName' | 'contextId'>;
 export type ChannelParameters = string | ChannelNameAndOptions;
 
 export const version = '2.30.0';

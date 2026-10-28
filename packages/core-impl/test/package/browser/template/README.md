@@ -18,7 +18,7 @@ The `@ably/pubsub-core` dependency gets added when we run the repository’s `te
 
 ## React hooks tests
 
-To test hooks imported from `@ably/pubsub-core/react` in React components, we used [Playwright for components](https://playwright.dev/docs/test-components). The main logic sits in `src/ReactApp.tsx`, and `AblyProvider` is configured in `playwright/index.tsx` file based on [this guide](https://playwright.dev/docs/test-components#hooks).
+To test hooks imported from `@ably/pubsub-core/react` in React components, we used [Playwright for components](https://playwright.dev/docs/test-components). The main logic sits in `src/ReactApp.tsx`, and `PubSubClientProvider` is configured in `playwright/index.tsx` file based on [this guide](https://playwright.dev/docs/test-components#hooks).
 
 ## Package scripts
 

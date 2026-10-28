@@ -1,10 +1,10 @@
 import React, { useLayoutEffect, useMemo } from 'react';
 import * as Ably from '@ably/pubsub-core/api';
-import { type AblyContextValue, AblyContext } from './AblyContext.js';
-import { channelOptionsForReactHooks } from './AblyReactHooks.js';
+import { type PubSubContextValue, PubSubContext } from './PubSubContext.js';
+import { channelOptionsForReactHooks } from './PubSubReactHooks.js';
 
 interface ChannelProviderProps {
-  ablyId?: string;
+  contextId?: string;
   channelName: string;
   options?: Ably.ChannelOptions;
   deriveOptions?: Ably.DeriveOptions;
@@ -12,14 +12,14 @@ interface ChannelProviderProps {
 }
 
 export const ChannelProvider = ({
-  ablyId = 'default',
+  contextId = 'default',
   channelName,
   options,
   deriveOptions,
   children,
 }: ChannelProviderProps) => {
-  const context = React.useContext(AblyContext);
-  const { client, _channelNameToChannelContext } = context[ablyId];
+  const context = React.useContext(PubSubContext);
+  const { client, _channelNameToChannelContext } = context[contextId];
 
   if (_channelNameToChannelContext[channelName]) {
     throw new Error('You can not use more than one `ChannelProvider` with the same channel name');
@@ -28,10 +28,10 @@ export const ChannelProvider = ({
   const derived = Boolean(deriveOptions);
   const channel = derived ? client.channels.getDerived(channelName, deriveOptions) : client.channels.get(channelName);
 
-  const value: AblyContextValue = useMemo(() => {
+  const value: PubSubContextValue = useMemo(() => {
     return {
       ...context,
-      [ablyId]: {
+      [contextId]: {
         client,
         _channelNameToChannelContext: {
           ..._channelNameToChannelContext,
@@ -43,11 +43,11 @@ export const ChannelProvider = ({
         _nearestChannelName: channelName,
       },
     };
-  }, [derived, client, channel, channelName, _channelNameToChannelContext, ablyId, context]);
+  }, [derived, client, channel, channelName, _channelNameToChannelContext, contextId, context]);
 
   useLayoutEffect(() => {
     channel.setOptions(channelOptionsForReactHooks(options));
   }, [channel, options]);
 
-  return <AblyContext.Provider value={value}>{children}</AblyContext.Provider>;
+  return <PubSubContext.Provider value={value}>{children}</PubSubContext.Provider>;
 };

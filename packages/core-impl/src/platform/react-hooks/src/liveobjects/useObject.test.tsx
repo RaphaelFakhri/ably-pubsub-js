@@ -4,7 +4,7 @@ import { it, beforeEach, describe, expect } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import { FakeAblySdk, FakeAblyChannels } from '../fakes/ably.js';
 import { FakeRealtimeObject } from '../fakes/liveobjects.js';
-import { AblyProvider } from '../AblyProvider.js';
+import { PubSubClientProvider } from '../PubSubClientProvider.js';
 import { ChannelProvider } from '../ChannelProvider.js';
 import { useObject, UseObjectOptions, UseObjectResult } from './useObject.js';
 
@@ -19,17 +19,17 @@ async function flushEffects() {
 
 function renderInCtxProvider(client: FakeAblySdk, children: React.ReactNode | React.ReactNode[]) {
   const renderResult = render(
-    <AblyProvider client={client as unknown as Ably.PubSubRealtimeClient}>
+    <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>
       <ChannelProvider channelName={testChannelName}>{children}</ChannelProvider>
-    </AblyProvider>,
+    </PubSubClientProvider>,
   );
 
   const originalRerender = renderResult.rerender;
   renderResult.rerender = (children: React.ReactNode | React.ReactNode[]) => {
     return originalRerender(
-      <AblyProvider client={client as unknown as Ably.PubSubRealtimeClient}>
+      <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>
         <ChannelProvider channelName={testChannelName}>{children}</ChannelProvider>
-      </AblyProvider>,
+      </PubSubClientProvider>,
     );
   };
 

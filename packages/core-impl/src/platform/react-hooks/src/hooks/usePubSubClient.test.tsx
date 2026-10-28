@@ -3,22 +3,22 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import type * as Ably from '@ably/pubsub-core';
 import { FakeAblySdk, FakeAblyChannels } from '../fakes/ably.js';
-import { AblyProvider } from '../AblyProvider.js';
-import { useAbly } from './useAbly.js';
+import { PubSubClientProvider } from '../PubSubClientProvider.js';
+import { usePubSubClient } from './usePubSubClient.js';
 import { useChannel } from './useChannel.js';
 import { usePresence } from './usePresence.js';
 
 const expectedMessage =
-  'Could not find ably client in context. Make sure your ably hooks are called inside an <AblyProvider>';
+  'Could not find ably client in context. Make sure your ably hooks are called inside an <PubSubClientProvider>';
 
 // React logs errors thrown during render to the console, which is noise here.
 const silenceConsoleError = () => vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
 /** @nospec */
-describe('hooks called outside an AblyProvider', () => {
-  it('useAbly throws a descriptive error', () => {
+describe('hooks called outside an PubSubClientProvider', () => {
+  it('usePubSubClient throws a descriptive error', () => {
     const spy = silenceConsoleError();
-    expect(() => renderHook(() => useAbly())).toThrow(expectedMessage);
+    expect(() => renderHook(() => usePubSubClient())).toThrow(expectedMessage);
     spy.mockRestore();
   });
 
@@ -34,13 +34,13 @@ describe('hooks called outside an AblyProvider', () => {
     spy.mockRestore();
   });
 
-  it('useAbly throws a descriptive error when the requested ablyId has no provider', () => {
+  it('usePubSubClient throws a descriptive error when the requested contextId has no provider', () => {
     const spy = silenceConsoleError();
     const client = new FakeAblySdk().connectTo(new FakeAblyChannels(['channel']));
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <AblyProvider client={client as unknown as Ably.PubSubRealtimeClient}>{children}</AblyProvider>
+      <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>{children}</PubSubClientProvider>
     );
-    expect(() => renderHook(() => useAbly('missing'), { wrapper })).toThrow(expectedMessage);
+    expect(() => renderHook(() => usePubSubClient('missing'), { wrapper })).toThrow(expectedMessage);
     spy.mockRestore();
   });
 });

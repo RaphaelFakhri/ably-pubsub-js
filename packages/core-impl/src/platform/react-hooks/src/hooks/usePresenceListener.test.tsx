@@ -4,24 +4,24 @@ import { it, beforeEach, describe, expect, vi } from 'vitest';
 import { OnPresenceMessageReceived, usePresenceListener } from './usePresenceListener.js';
 import { render, screen, act, waitFor } from '@testing-library/react';
 import { FakeAblySdk, FakeAblyChannels } from '../fakes/ably.js';
-import { AblyProvider } from '../AblyProvider.js';
+import { PubSubClientProvider } from '../PubSubClientProvider.js';
 import { ChannelProvider } from '../ChannelProvider.js';
 
 const testChannelName = 'testChannel';
 
 function renderInCtxProvider(client: FakeAblySdk, children: React.ReactNode | React.ReactNode[]) {
   const renderResult = render(
-    <AblyProvider client={client as unknown as Ably.PubSubRealtimeClient}>
+    <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>
       <ChannelProvider channelName={testChannelName}>{children}</ChannelProvider>
-    </AblyProvider>,
+    </PubSubClientProvider>,
   );
 
   const originalRerender = renderResult.rerender;
   renderResult.rerender = (children: React.ReactNode | React.ReactNode[]) => {
     return originalRerender(
-      <AblyProvider client={client as unknown as Ably.PubSubRealtimeClient}>
+      <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>
         <ChannelProvider channelName={testChannelName}>{children}</ChannelProvider>
-      </AblyProvider>,
+      </PubSubClientProvider>,
     );
   };
 
@@ -140,11 +140,11 @@ describe('usePresenceListener', () => {
 
     renderInCtxProvider(
       ablyClient,
-      <AblyProvider ablyId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
-        <ChannelProvider channelName={testChannelName} ablyId="otherClient">
+      <PubSubClientProvider contextId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
+        <ChannelProvider channelName={testChannelName} contextId="otherClient">
           <UsePresenceListenerComponentMultipleClients />
         </ChannelProvider>
-      </AblyProvider>,
+      </PubSubClientProvider>,
     );
 
     await act(async () => {
@@ -345,7 +345,10 @@ const UsePresenceListenerComponent = ({
 
 const UsePresenceListenerComponentMultipleClients = () => {
   const { presenceData: presenceData1 } = usePresenceListener({ channelName: testChannelName });
-  const { presenceData: presenceData2 } = usePresenceListener({ channelName: testChannelName, ablyId: 'otherClient' });
+  const { presenceData: presenceData2 } = usePresenceListener({
+    channelName: testChannelName,
+    contextId: 'otherClient',
+  });
 
   const presentUsers1 = presenceData1.map((presence, index) => {
     return (

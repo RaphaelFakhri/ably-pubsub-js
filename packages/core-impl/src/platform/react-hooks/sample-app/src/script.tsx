@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 // @ts-ignore
 import * as Ably from '@ably/pubsub-core';
 import App from './App.js';
-import { AblyProvider, ChannelProvider } from '../../src/index.js';
+import { PubSubClientProvider, ChannelProvider } from '../../src/index.js';
 
 const rootId = 'root';
 const container = document.getElementById(rootId);
@@ -25,18 +25,18 @@ const client = new Ably.DefaultPubSubRealtimeClient({
 const root = createRoot(container);
 root.render(
   <React.StrictMode>
-    <AblyProvider client={client}>
-      <AblyProvider ablyId="rob" client={client}>
-        <AblyProvider ablyId="frontOffice" client={client}>
+    <PubSubClientProvider client={client}>
+      <PubSubClientProvider contextId="rob" client={client}>
+        <PubSubClientProvider contextId="frontOffice" client={client}>
           <ChannelProvider channelName="your-channel-name" options={{ modes: ['PRESENCE', 'PUBLISH', 'SUBSCRIBE'] }}>
             <ChannelProvider channelName="your-derived-channel-name">
               <ChannelProvider
-                ablyId="rob"
+                contextId="rob"
                 channelName="your-derived-channel-name"
                 deriveOptions={{ filter: 'headers.email == `"rob.pike@domain.com"` || headers.company == `"domain"`' }}
               >
                 <ChannelProvider
-                  ablyId="frontOffice"
+                  contextId="frontOffice"
                   channelName="your-derived-channel-name"
                   deriveOptions={{ filter: 'headers.role == `"front-office"` || headers.company == `"domain"`' }}
                 >
@@ -45,8 +45,8 @@ root.render(
               </ChannelProvider>
             </ChannelProvider>
           </ChannelProvider>
-        </AblyProvider>
-      </AblyProvider>
-    </AblyProvider>
+        </PubSubClientProvider>
+      </PubSubClientProvider>
+    </PubSubClientProvider>
   </React.StrictMode>,
 );

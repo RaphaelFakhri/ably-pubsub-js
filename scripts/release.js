@@ -56,7 +56,7 @@ const requiredArtifacts = {
   'packages/server': ['dist/index.js', 'dist/index.mjs', 'dist/node.js', 'index.d.mts'],
 };
 
-const reactHooksFile = 'packages/core-impl/src/platform/react-hooks/src/AblyReactHooks.ts';
+const reactHooksFile = 'packages/core-impl/src/platform/react-hooks/src/PubSubReactHooks.ts';
 const reactHooksVersionRe = /^export const version = '([^']+)';$/m;
 
 function readJson(relPath) {

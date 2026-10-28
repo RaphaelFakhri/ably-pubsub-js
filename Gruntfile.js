@@ -291,7 +291,7 @@ module.exports = function (grunt) {
 
   // The React hooks are compiled with tsc rather than bundled, into one module per source file, so
   // that `@ably/pubsub-device/react` and `@ably/pubsub-device/liveobjects/react` share the module
-  // that holds the React context, and with it the client an `AblyProvider` supplies.
+  // that holds the React context, and with it the client an `PubSubClientProvider` supplies.
   grunt.registerTask(
     'build:packages:react',
     'Compile the React hooks of @ably/pubsub-device',

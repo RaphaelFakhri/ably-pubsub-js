@@ -8,16 +8,16 @@ import React from 'react';
 // This can lead to problems like having an Ably Channel instance added
 // in one context, and then attempting to retrieve it from another different context.
 // This is why a single Ably context is created and stored in the global state.
-const contextKey = Symbol.for('__ABLY_CONTEXT__');
+const contextKey = Symbol.for('__PUBSUB_CONTEXT__');
 
-const globalObjectForContext: { [contextKey]?: React.Context<AblyContextValue> } =
+const globalObjectForContext: { [contextKey]?: React.Context<PubSubContextValue> } =
   typeof globalThis !== 'undefined' ? (globalThis as any) : {};
 
 // Ably context contains an object which stores all provider options indexed by provider id,
-// which is used to get options set by specific `AblyProvider` after calling `React.useContext`.
-export type AblyContextValue = Record<string, AblyContextProviderProps>;
+// which is used to get options set by specific `PubSubClientProvider` after calling `React.useContext`.
+export type PubSubContextValue = Record<string, PubSubContextProviderProps>;
 
-export interface AblyContextProviderProps {
+export interface PubSubContextProviderProps {
   client: Ably.PubSubRealtimeClient;
   _channelNameToChannelContext: Record<string, ChannelContextProps>;
   // The channel named by the closest enclosing `ChannelProvider`. Channel hooks
@@ -31,13 +31,13 @@ export interface ChannelContextProps {
   derived?: boolean;
 }
 
-function getContext(): React.Context<AblyContextValue> {
+function getContext(): React.Context<PubSubContextValue> {
   let context = globalObjectForContext[contextKey];
   if (!context) {
-    context = globalObjectForContext[contextKey] = React.createContext<AblyContextValue>({});
+    context = globalObjectForContext[contextKey] = React.createContext<PubSubContextValue>({});
   }
 
   return context;
 }
 
-export const AblyContext = getContext();
+export const PubSubContext = getContext();
