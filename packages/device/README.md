@@ -40,10 +40,10 @@ In production, prefer [token authentication](https://ably.com/docs/auth/token) o
 Everything a device needs is exported here, so you never need to add `@ably/pubsub-core` as a dependency of your own alongside this package.
 
 | Import from                             | What you get                                                            |
-| --------------------------------------- | ----------------------------------------------------------------------- |
+| --------------------------------------- | ----------------------------------------------------------------------- | --- | ----------------------------- | ---------------------------------------------------------- |
 | `@ably/pubsub-device`                   | `createClient`, plus the core's public API and type surface             |
 | `@ably/pubsub-device/debug`             | The same, for a build that keeps every log                              |
-| `@ably/pubsub-device/modular`           | `createClient` for a tree-shakable client, and its plugins              || `@ably/pubsub-device/msgpack`           | The MessagePack plugin, for the binary protocol on the web      |
+| `@ably/pubsub-device/modular`           | `createClient` for a tree-shakable client, and its plugins              |     | `@ably/pubsub-device/msgpack` | The MessagePack plugin, for the binary protocol on the web |
 | `@ably/pubsub-device/react`             | The React hooks: `PubSubClientProvider`, `useChannel`, `usePresence`, … |
 | `@ably/pubsub-device/liveobjects`       | The LiveObjects plugin                                                  |
 | `@ably/pubsub-device/liveobjects/react` | The `useObject` React hook for LiveObjects                              |
