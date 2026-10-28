@@ -27,8 +27,8 @@ import type {
   BatchPresenceSuccessResult,
   BatchPresenceFailureResult,
   Push,
-  LocalDevice,
 } from '@ably/pubsub-core/api';
+import type { LocalDevice } from '@ably/pubsub-core/device';
 import type { ModularPlugins } from '@ably/pubsub-core/modular';
 
 export * from '@ably/pubsub-core/modular';

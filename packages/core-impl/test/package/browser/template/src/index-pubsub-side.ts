@@ -178,11 +178,18 @@ globalThis.testAblyPackage = async function () {
   const initialMap = LiveMap.create({ count: LiveCounter.create(1) });
   void initialMap;
 
-  // Check the device's client type goes by both names, and the static helpers are classes both
-  // packages export by name.
+  // Check the device client extends the core's PubSubRealtimeClient, which the server's realtime
+  // client is, that the device-only types stay off the server, and that the static helpers are
+  // classes both packages export by name.
   const deviceClient: PubSubDevice.PubSubClient = device;
-  const sameClient: PubSubDevice.PubSubRealtimeClient = deviceClient;
-  void sameClient;
+  const baseClient: PubSubDevice.PubSubRealtimeClient = deviceClient;
+  void baseClient;
+  const serverBaseClient: PubSubServer.PubSubRealtimeClient = serverRealtime;
+  void serverBaseClient;
+  // @ts-expect-error
+  type ServerDeviceClient = PubSubServer.PubSubClient;
+  // @ts-expect-error
+  type ServerDevicePush = PubSubServer.DevicePush;
   const presenceMessage: PubSubServer.PresenceMessage = PubSubServer.PresenceMessage.fromValues({ clientId: 'x' });
   void presenceMessage;
   void PubSubDevice.Message.fromEncoded;
@@ -209,12 +216,23 @@ globalThis.testAblyPackage = async function () {
   const serverHttpChannel: PubSubServer.HttpChannel = serverHttp.channels.get('channel');
   void serverHttpChannel;
 
-  // The HTTP client offers only push admin: activating a device for push is a realtime-client concern.
+  // A server is not a push target, so both server clients offer only push admin. Activating a
+  // device for push is the device client's concern.
   void serverHttp.push.admin;
   // @ts-expect-error
   void serverHttp.push.activate;
   // @ts-expect-error
   void serverHttp.getDevice;
+  void serverRealtime.push.admin;
+  // @ts-expect-error
+  void serverRealtime.push.activate;
+  // @ts-expect-error
+  void serverRealtime.push.deactivate;
+  // @ts-expect-error
+  void serverRealtime.getDevice;
+  void device.push.admin;
+  void device.push.activate;
+  void device.getDevice;
 
   // Check the re-exported error type is the core's, so instanceof works across the boundary.
   const error: PubSubDevice.ErrorInfo = new PubSubDevice.ErrorInfo('message', 40000, 400);

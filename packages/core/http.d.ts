@@ -34,7 +34,7 @@ import type {
   PresenceMessage,
   PublishOptions,
   PublishResult,
-  PushAdmin,
+  Push,
   PushChannel,
   RealtimeChannel,
   Stats,
@@ -233,19 +233,9 @@ export declare interface PubSubHttpClient {
    */
   batchPresence(channels: string[]): Promise<BatchResult<BatchPresenceSuccessResult | BatchPresenceFailureResult>[]>;
   /**
-   * A {@link HttpPush} object.
+   * A {@link Push} object.
    */
-  push: HttpPush;
-}
-
-/**
- * Enables the management of push notification registrations with Ably from the HTTP client. Activating the local device for push notifications is a device-side concern, available only on the realtime client.
- */
-export declare interface HttpPush {
-  /**
-   * A {@link PushAdmin} object.
-   */
-  admin: PushAdmin;
+  push: Push;
 }
 
 /**

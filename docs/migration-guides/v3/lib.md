@@ -45,7 +45,9 @@ The synchronous `device()` accessor on the client is removed. `getDevice()` repl
 + const device = await client.getDevice();
 ```
 
-`getDevice()` exists only on the realtime client. The HTTP client has neither `device()` nor `getDevice()` in v3, and its `push` property is an `HttpPush`, which offers only `push.admin`. Activating, deactivating and inspecting the local device for push notifications are device-side operations: use the realtime client from `@ably/pubsub-device` for them.
+`getDevice()` exists only on the `PubSubClient` from `@ably/pubsub-device`. A server is not a push target, so neither client from `@ably/pubsub-server` has `getDevice()`, and their `push` offers only `push.admin`. Activating, deactivating and inspecting the local device for push notifications are device-side operations: use `@ably/pubsub-device` for them.
+
+The `Push` type now holds only `admin`. The device-side methods, `activate()`, `deactivate()` and `updateToken()`, are on `DevicePush`, which `PubSubClient.push` returns.
 
 <h3 id="recovery-key">Replace <code>connection.recoveryKey</code> with <code>connection.createRecoveryKey()</code></h3>
 
@@ -218,10 +220,10 @@ Each factory returns a client with the same API the constructor's did, so the re
 
 The factories return interfaces rather than classes, so a type annotation that named a class needs the interface instead:
 
-| v2                                     | v3                                                              |
-| -------------------------------------- | --------------------------------------------------------------- |
-| `Ably.Realtime`, `Ably.RealtimeClient` | `PubSubRealtimeClient`, or its alias `PubSubClient` on a device |
-| `Ably.Rest`, `Ably.RestClient`         | `PubSubHttpClient`, on a server                                 |
+| v2                                     | v3                                                             |
+| -------------------------------------- | -------------------------------------------------------------- |
+| `Ably.Realtime`, `Ably.RealtimeClient` | `PubSubClient` on a device, `PubSubRealtimeClient` on a server |
+| `Ably.Rest`, `Ably.RestClient`         | `PubSubHttpClient`, on a server                                |
 
 Code that used `instanceof Ably.Realtime` or `instanceof Ably.Rest` has no class to test against, and should rely on the factory's return type instead.
 
@@ -382,11 +384,11 @@ Their behaviour is unchanged.
 | React `AblyProvider`, `useAbly`, `AblyContext`, `AblyMessageCallback` and the `AblyContext*` types renamed with a `PubSub` prefix. `ablyId`, the `useChannel` result `ably` and `ChannelNameAndAblyId` renamed `contextId`, `client` and `ChannelNameAndContextId` | Rename ([above](#react-renames))                                                                          |
 | `Realtime` and `Rest` classes removed, with no replacement class                                                                                                                                                                                                   | Create clients through the factories ([step 3](#use-the-factories))                                       |
 | `BaseRealtime` and `BaseRest` modular classes removed, with no replacement class                                                                                                                                                                                   | Create clients with `createClient` from `@ably/pubsub-device/modular` ([step 3](#use-the-factories))      |
-| `RealtimeClient` and `RestClient` renamed `PubSubRealtimeClient` and `PubSubHttpClient`                                                                                                                                                                            | Rename ([step 3](#use-the-factories))                                                                     |
+| `RealtimeClient` and `RestClient` renamed `PubSubRealtimeClient` and `PubSubHttpClient`. A device client is a `PubSubClient`, which extends `PubSubRealtimeClient`                                                                                                 | Rename ([step 3](#use-the-factories))                                                                     |
 | `Message`, `PresenceMessage`, `Annotation` and `Crypto` statics moved to named class exports; `MessageStatic`, `PresenceMessageStatic` and `AnnotationStatic` removed                                                                                              | Import them by name ([step 4](#static-helpers))                                                           |
 | `@ably/pubsub-device` offers no HTTP client, and omits its types and its LiveObjects API                                                                                                                                                                           | Use the realtime client, or `@ably/pubsub-server` on infrastructure you operate ([step 2](#import-paths)) |
 | `environment`, `restHost` and `realtimeHost` client options removed — **silently ignored**, not rejected                                                                                                                                                           | Use `endpoint` ([above](#endpoint))                                                                       |
-| `device()` removed. The HTTP client also has no `getDevice()`, and its `push` offers only `admin`                                                                                                                                                                  | `await getDevice()` on the realtime client ([above](#get-device))                                         |
+| `device()` removed. `getDevice()` and the device methods of `push` exist only on the `@ably/pubsub-device` client, whose `push` is a `DevicePush`. `Push` holds only `admin`                                                                                       | `await getDevice()` on the `@ably/pubsub-device` client ([above](#get-device))                            |
 | `Connection.recoveryKey` removed                                                                                                                                                                                                                                   | `Connection.createRecoveryKey()` ([above](#recovery-key))                                                 |
 | `channels.release()` throws 90011 unless the channel is initialized, detached or failed                                                                                                                                                                            | Detach the channel first ([above](#channel-release))                                                      |
 | `strictMode` client option removed: `channel.subscribe()` without the `subscribe` mode rejects with 90009, and `presence.get()` without `presence_subscribe` rejects with 91008                                                                                    | Request the mode, then drop `strictMode` ([above](#strict-mode))                                          |

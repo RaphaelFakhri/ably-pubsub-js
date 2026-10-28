@@ -31,7 +31,7 @@ await channel.publish('test-event', 'hello world');
 
 `createClient` returns a `PubSubClient`, the realtime client that everything in the [Ably Pub/Sub JavaScript documentation](https://ably.com/docs/getting-started/javascript) describes. It is the only way to create one: this package exports no client class to construct, because a client constructed directly would declare no side.
 
-`PubSubClient` is the name this package gives the core's `PubSubRealtimeClient` interface, and either name works in a type annotation.
+`PubSubClient` extends `PubSubRealtimeClient`, the realtime client of `@ably/pubsub-server`, with the APIs that act on this device as a target for push notifications: `getDevice()`, and `push.activate()`, `push.deactivate()` and `push.updateToken()`. Annotate a client from `createClient` as `PubSubClient` to keep them.
 
 In production, prefer [token authentication](https://ably.com/docs/auth/token) over embedding an API key in code that ships to a device.
 

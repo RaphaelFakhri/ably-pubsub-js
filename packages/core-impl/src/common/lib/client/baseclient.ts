@@ -7,6 +7,7 @@ import Stats from '../types/stats';
 import { HttpRequester, RequestParams } from '../../types/http';
 import ClientOptions, { NormalisedClientOptions } from '../../types/ClientOptions';
 import * as API from '@ably/pubsub-core/api';
+import type * as DeviceAPI from '@ably/pubsub-core/device';
 import * as Utils from '../util/utils';
 
 import Platform from '../../platform';
@@ -181,7 +182,7 @@ class BaseClient {
    *
    * @internal
    */
-  deviceSync(): LocalDevice & API.LocalDevice {
+  deviceSync(): LocalDevice & DeviceAPI.LocalDevice {
     if (!this.options.plugins?.Push || !this.push.LocalDevice) {
       throwMissingPluginError('Push');
     }
@@ -201,7 +202,7 @@ class BaseClient {
   }
 
   /** RSH8 */
-  async getDevice(): Promise<LocalDevice & API.LocalDevice> {
+  async getDevice(): Promise<LocalDevice & DeviceAPI.LocalDevice> {
     if (!this.options.plugins?.Push || !this.push.LocalDevice) {
       throwMissingPluginError('Push');
     }
