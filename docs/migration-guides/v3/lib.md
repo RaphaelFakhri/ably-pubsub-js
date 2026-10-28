@@ -45,6 +45,8 @@ The synchronous `device()` accessor on the client is removed. `getDevice()` repl
 + const device = await client.getDevice();
 ```
 
+`getDevice()` exists only on the realtime client. The HTTP client has neither `device()` nor `getDevice()` in v3, and its `push` property is an `HttpPush`, which offers only `push.admin`. Activating, deactivating and inspecting the local device for push notifications are device-side operations: use the realtime client from `@ably/pubsub-device` for them.
+
 <h3 id="recovery-key">Replace <code>connection.recoveryKey</code> with <code>connection.createRecoveryKey()</code></h3>
 
 ```diff
@@ -278,10 +280,10 @@ In the main API surface:
 | v2                   | v3                   |
 | -------------------- | -------------------- |
 | `RestClient`         | `PubSubHttpClient`   |
-| `RestAnnotations`    | `HttpAnnotations`    |
-| `RestHistoryParams`  | `HttpHistoryParams`  |
 | `Channel`            | `HttpChannel`        |
 | `Presence`           | `HttpPresence`       |
+| `RestAnnotations`    | `HttpAnnotations`    |
+| `RestHistoryParams`  | `HttpHistoryParams`  |
 | `RestPresenceParams` | `HttpPresenceParams` |
 
 In the modular variant:
@@ -373,7 +375,7 @@ Their behaviour is unchanged.
 | `Message`, `PresenceMessage`, `Annotation` and `Crypto` statics moved to named class exports; `MessageStatic`, `PresenceMessageStatic` and `AnnotationStatic` removed                                                                                              | Import them by name ([step 4](#static-helpers))                                                           |
 | `@ably/pubsub-device` offers no HTTP client, and omits its types and its LiveObjects API                                                                                                                                                                           | Use the realtime client, or `@ably/pubsub-server` on infrastructure you operate ([step 2](#import-paths)) |
 | `environment`, `restHost` and `realtimeHost` client options removed — **silently ignored**, not rejected                                                                                                                                                           | Use `endpoint` ([above](#endpoint))                                                                       |
-| `device()` removed from the `Http` and `Realtime` clients                                                                                                                                                                                                          | `await getDevice()` ([above](#get-device))                                                                |
+| `device()` removed. The HTTP client also has no `getDevice()`, and its `push` offers only `admin`                                                                                                                                                                  | `await getDevice()` on the realtime client ([above](#get-device))                                         |
 | `Connection.recoveryKey` removed                                                                                                                                                                                                                                   | `Connection.createRecoveryKey()` ([above](#recovery-key))                                                 |
 | `channels.release()` throws 90011 unless the channel is initialized, detached or failed                                                                                                                                                                            | Detach the channel first ([above](#channel-release))                                                      |
 | v1 callback-signature overloads removed from the type definitions                                                                                                                                                                                                  | Await the returned promise ([above](#entry-point-shims))                                                  |

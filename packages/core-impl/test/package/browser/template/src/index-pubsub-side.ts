@@ -209,6 +209,13 @@ globalThis.testAblyPackage = async function () {
   const serverHttpChannel: PubSubServer.HttpChannel = serverHttp.channels.get('channel');
   void serverHttpChannel;
 
+  // The HTTP client offers only push admin: activating a device for push is a realtime-client concern.
+  void serverHttp.push.admin;
+  // @ts-expect-error
+  void serverHttp.push.activate;
+  // @ts-expect-error
+  void serverHttp.getDevice;
+
   // Check the re-exported error type is the core's, so instanceof works across the boundary.
   const error: PubSubDevice.ErrorInfo = new PubSubDevice.ErrorInfo('message', 40000, 400);
   if (!(error instanceof PubSubServer.ErrorInfo)) {

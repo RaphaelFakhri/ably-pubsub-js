@@ -26,7 +26,6 @@ import type {
   GetAnnotationsParams,
   HttpPaginatedResponse,
   InboundMessage,
-  LocalDevice,
   Message,
   MessageOperation,
   OutboundAnnotation,
@@ -35,7 +34,7 @@ import type {
   PresenceMessage,
   PublishOptions,
   PublishResult,
-  Push,
+  PushAdmin,
   PushChannel,
   RealtimeChannel,
   Stats,
@@ -234,15 +233,19 @@ export declare interface PubSubHttpClient {
    */
   batchPresence(channels: string[]): Promise<BatchResult<BatchPresenceSuccessResult | BatchPresenceFailureResult>[]>;
   /**
-   * A {@link Push} object.
+   * A {@link HttpPush} object.
    */
-  push: Push;
+  push: HttpPush;
+}
+
+/**
+ * Enables the management of push notification registrations with Ably from the HTTP client. Activating the local device for push notifications is a device-side concern, available only on the realtime client.
+ */
+export declare interface HttpPush {
   /**
-   * Retrieves a {@link LocalDevice} object that represents the current state of the device as a target for push notifications, loading it from persistent storage if necessary.
-   *
-   * @returns A promise which resolves to a {@link LocalDevice} object.
+   * A {@link PushAdmin} object.
    */
-  getDevice(): Promise<LocalDevice>;
+  admin: PushAdmin;
 }
 
 /**
