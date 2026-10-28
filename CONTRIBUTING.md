@@ -39,7 +39,7 @@ Each bundles the private implementation in `packages/core-impl`, and depends on 
 
 To build the library, simply run `npm run build`. Building the library currently requires NodeJS >= v16.
 
-Since webpack builds are slow, commands are also available to only build the output for specific platforms (eg `npm run build:node`), see [package.json](./package.json) for the full list of available commands. Build output for the core's runtime lands in `packages/core/build`, and for the per-side packages in `packages/device/dist` and `packages/server/dist`, with the CDN bundles in `packages/device/dist/cdn`. The bundles the test suite loads are built from the implementation into `packages/core-impl/build`, and are never published.
+Since webpack builds are slow, commands are also available to only build the output for specific platforms (eg `npm run build:node`), see [package.json](./package.json) for the full list of available commands. Build output for the core's runtime lands in `packages/core/build`, and for the per-side packages in `packages/device/dist` and `packages/server/dist`, with the CDN bundles in `packages/device/dist/cdn`. The bundles the test suite loads are built from the implementation into `packages/core-impl/build`, and are never published. [packages/README.md](./packages/README.md) lists every published artifact: its file, the export and condition that resolve to it, and whether it strips logs and includes MessagePack.
 
 ## Coding conventions
 

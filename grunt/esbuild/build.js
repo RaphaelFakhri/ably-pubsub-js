@@ -95,6 +95,9 @@ const coreRuntimeConfigs = ['cjs', 'esm'].map((format) => ({
 // implementation reaches through npm is left external too, as the platform bundles above leave it,
 // and listed in the package's own `dependencies`.
 //
+// packages/README.md lists every bundle built here and by `cdnConfigs` below, so update it when you
+// add, remove or change one.
+//
 // Each entry is one of the package's bundles. `platform` picks which implementation the package's
 // sources reach through the `@ably/pubsub-core-impl/platform` specifier, by the export condition
 // esbuild resolves it with: `node` for Node.js, and `default` (the web implementation) for every

@@ -299,6 +299,8 @@ module.exports = function (grunt) {
   );
 
   // The packages' bundles leave `@ably/pubsub-core` external, so they load its runtime from its build.
+  //
+  // packages/README.md lists every artifact these tasks publish, so update it when you change them.
   grunt.registerTask('build:packages', [
     'build:core',
     'build:packages:bundle',
