@@ -151,10 +151,11 @@ const pubsubPackageConfigs = [
       // devices: smaller, and without the detail of the client's internals. `@ably/pubsub-device/debug`
       // serves the same entry point with full logging, for diagnosing an app.
       // The React Native pair is built by webpack (webpack.config.js).
+      //
+      // The Node.js bundle is not stripped, so `@ably/pubsub-device/debug` resolves to it on Node.js.
       { name: 'index', plugins: [stripLogsPlugin] },
-      { name: 'node', source: 'index', platform: 'node', external: nodeExternals, plugins: [stripLogsPlugin] },
+      { name: 'node', source: 'index', platform: 'node', external: nodeExternals },
       { name: 'debug', source: 'index' },
-      { name: 'debug-node', source: 'index', platform: 'node', external: nodeExternals },
       // ESM only: the modular variant is published behind an `import` condition alone. Its logs are
       // stripped, as the internal modular bundle's are, to keep it minimal.
       { name: 'modular', formats: ['esm'], plugins: [stripLogsPlugin] },

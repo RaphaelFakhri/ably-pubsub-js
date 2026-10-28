@@ -1,5 +1,5 @@
 {
-  "main": "../dist/debug-node.js",
+  "main": "../dist/node.js",
   "module": "../dist/debug.mjs",
   "browser": "../dist/debug.js",
   "react-native": "../dist/debug-react-native.js",

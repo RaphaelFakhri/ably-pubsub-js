@@ -48,6 +48,22 @@ function usesBinaryProtocol(
   }
 }
 
+// Constructs a client at the most verbose log level and returns everything it logged. The client
+// never connects, so the logs are those of construction alone, which include several below error
+// level and, from a stripped build, the warning that its logs are stripped.
+function logsOfConstruction(createClient: typeof PubSubDevice.createClient) {
+  const logs: string[] = [];
+  const client = createClient({
+    key: 'app.key:secret',
+    autoConnect: false,
+    clientId: 'someone',
+    logLevel: 4,
+    logHandler: (message) => logs.push(message),
+  });
+  client.close();
+  return logs;
+}
+
 globalThis.testAblyPackage = async function () {
   const device = PubSubDevice.createClient({ key: 'app.key:secret', autoConnect: false, clientId: 'someone' });
   const serverRealtime = PubSubServer.createRealtimeClient({ key: 'app.key:secret', autoConnect: false });
@@ -62,13 +78,32 @@ globalThis.testAblyPackage = async function () {
   void serverChannel;
   void serverHttp.request;
 
-  // The debug subpath is the same client with full logging, and shares the root's types and its
-  // ErrorInfo.
+  // In the browser, the root strips most logs below error level, and the debug subpath is the same
+  // client with full logging, so the same client options log only the stripped-logs warning from
+  // the one and everything, without that warning, from the other.
+  const strippedWarning = 'this build of the client has most logs below error level stripped';
+  const rootLogs = logsOfConstruction(PubSubDevice.createClient);
+  if (rootLogs.length !== 1 || !rootLogs[0].includes(strippedWarning)) {
+    throw new Error(`the root should log only the stripped-logs warning, but logged: ${JSON.stringify(rootLogs)}`);
+  }
+  const debugLogs = logsOfConstruction(PubSubDeviceDebug.createClient);
+  if (!debugLogs.some((message) => message.includes('BaseClient(): started'))) {
+    throw new Error('the debug entry point did not log below error level');
+  }
+  if (debugLogs.some((message) => message.includes(strippedWarning))) {
+    throw new Error('the debug entry point logged the stripped-logs warning');
+  }
+
+  // The debug subpath exports what the root does, under the root's types. Its client is a separate
+  // copy of the root's, but shares the core's one runtime ErrorInfo, so that an error from either
+  // passes `instanceof` against both.
+  if (Object.keys(PubSubDeviceDebug).sort().join() !== Object.keys(PubSubDevice).sort().join()) {
+    throw new Error('the debug entry point does not export what the root exports');
+  }
   const debugDevice: PubSubDevice.PubSubClient = PubSubDeviceDebug.createClient({
     key: 'app.key:secret',
     autoConnect: false,
     clientId: 'someone',
-    logLevel: 4,
   });
   if (PubSubDeviceDebug.ErrorInfo !== PubSubDevice.ErrorInfo) {
     throw new Error('the debug entry point does not share the root ErrorInfo');

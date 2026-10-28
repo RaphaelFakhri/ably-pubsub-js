@@ -44,11 +44,11 @@
       "node": {
         "require": {
           "types": "./debug/index.d.ts",
-          "default": "./dist/debug-node.js"
+          "default": "./dist/node.js"
         },
         "import": {
           "types": "./debug/index.d.mts",
-          "default": "./dist/debug-node.mjs"
+          "default": "./dist/node.mjs"
         }
       },
       "require": {
