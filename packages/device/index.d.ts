@@ -41,6 +41,11 @@ export type PubSubClient = PubSubRealtimeClient;
  * warnings, and the plugins' logs. For full logging, import `createClient` from
  * `@ably/pubsub-device/debug` instead.
  *
+ * On the web and React Native, this build of the client also leaves MessagePack out, so it uses
+ * JSON whatever `ClientOptions.useBinaryProtocol` says. To use the binary protocol there, pass the
+ * `MsgPack` plugin from `@ably/pubsub-device/msgpack` in `ClientOptions.plugins`. On Node.js, the
+ * client includes MessagePack and uses it by default.
+ *
  * @param options - A client options object, an Ably API key, or an Ably token.
  */
 export declare function createClient(options: ClientOptions | string): PubSubClient;

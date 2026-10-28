@@ -4,14 +4,18 @@
 // package's declarations re-export the core's by bare specifier, so its types only resolve if the
 // core resolves from inside it too.
 //
-// This covers resolution, types and bundling only. The agent identifier each factory stamps —
-// what declaring a side means, per the note in packages/device/README.md — is asserted on the
-// wire in packages/core-impl/test/unit/pubsub_side_agent.test.js.
+// This covers resolution, types and bundling, plus the one behaviour that only the browser bundles
+// have: the device's leaves MessagePack out until it is given the `MsgPack` plugin, and throws if
+// asked for the binary protocol without it. The agent
+// identifier each factory stamps — what declaring a side means, per the note in
+// packages/device/README.md — is asserted on the wire in
+// packages/core-impl/test/unit/pubsub_side_agent.test.js.
 //
 // Nothing here connects to Ably, so this file needs no sandbox key.
 import * as PubSubDevice from '@ably/pubsub-device';
 import * as PubSubDeviceDebug from '@ably/pubsub-device/debug';
 import * as PubSubDeviceModular from '@ably/pubsub-device/modular';
+import { MsgPack } from '@ably/pubsub-device/msgpack';
 import { Push } from '@ably/pubsub-device/push';
 import { LiveObjects, LiveMap, LiveCounter } from '@ably/pubsub-device/liveobjects';
 import * as PubSubServer from '@ably/pubsub-server';
@@ -28,6 +32,20 @@ async function attachChannel(channel: PubSubDevice.RealtimeChannel) {
 
 function inspectStats(page: PubSubServer.PaginatedResult<PubSubServer.Stats>) {
   return page.items.length;
+}
+
+// Constructs a client that never connects and returns whether it settled on the binary protocol.
+// The resolved options are not on the public type, hence the cast.
+function usesBinaryProtocol(
+  createClient: (options: PubSubDevice.ClientOptions) => PubSubDevice.PubSubClient,
+  options: PubSubDevice.ClientOptions,
+) {
+  const client = createClient({ key: 'app.key:secret', autoConnect: false, ...options });
+  try {
+    return (client as unknown as { options: { useBinaryProtocol: boolean } }).options.useBinaryProtocol;
+  } finally {
+    client.close();
+  }
 }
 
 globalThis.testAblyPackage = async function () {
@@ -81,10 +99,44 @@ globalThis.testAblyPackage = async function () {
     key: 'app.key:secret',
     autoConnect: false,
     clientId: 'someone',
-    plugins: { Push, LiveObjects },
+    useBinaryProtocol: true,
+    plugins: { Push, LiveObjects, MsgPack },
   });
   void withPlugins.channels.get('channel').push;
   withPlugins.close();
+
+  // The device's browser bundles leave MessagePack out, so a client from them uses JSON until it is
+  // given the `MsgPack` plugin, and refuses to be constructed if it asks for the binary protocol
+  // without it. Both the root and the debug entry point are checked, since each is its own bundle.
+  for (const [entryPoint, createClient] of [
+    ['@ably/pubsub-device', PubSubDevice.createClient],
+    ['@ably/pubsub-device/debug', PubSubDeviceDebug.createClient],
+  ] as const) {
+    const cases: [PubSubDevice.ClientOptions, boolean][] = [
+      [{}, false],
+      [{ useBinaryProtocol: true, plugins: { MsgPack } }, true],
+      [{ plugins: { MsgPack } }, false],
+    ];
+    for (const [options, expected] of cases) {
+      if (usesBinaryProtocol(createClient, options) !== expected) {
+        throw new Error(
+          `a ${entryPoint} client with ${JSON.stringify(options)} should use ${expected ? 'MessagePack' : 'JSON'}`,
+        );
+      }
+    }
+
+    let missingPluginError: unknown;
+    try {
+      usesBinaryProtocol(createClient, { useBinaryProtocol: true });
+    } catch (error) {
+      missingPluginError = error;
+    }
+    if (!(missingPluginError instanceof PubSubDevice.ErrorInfo) || missingPluginError.code !== 40019) {
+      throw new Error(
+        `a ${entryPoint} client with useBinaryProtocol: true and no MsgPack plugin should throw ErrorInfo 40019, but got ${missingPluginError}`,
+      );
+    }
+  }
 
   // `LiveMap` and `LiveCounter` are values as well as types: their static `create()` builds the value
   // to assign to an object path.

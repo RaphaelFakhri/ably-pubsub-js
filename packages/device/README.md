@@ -44,6 +44,7 @@ Everything a device needs is exported here, so you never need to add `@ably/pubs
 | `@ably/pubsub-device`                   | `createClient`, plus the core's public API and type surface     |
 | `@ably/pubsub-device/debug`             | The same, for a build that keeps every log                      |
 | `@ably/pubsub-device/modular`           | `createClient` for a tree-shakable client, and its plugins      |
+| `@ably/pubsub-device/msgpack`           | The MessagePack plugin, for the binary protocol on the web      |
 | `@ably/pubsub-device/react`             | The React hooks: `AblyProvider`, `useChannel`, `usePresence`, … |
 | `@ably/pubsub-device/liveobjects`       | The LiveObjects plugin                                          |
 | `@ably/pubsub-device/liveobjects/react` | The `useObject` React hook for LiveObjects                      |
@@ -70,6 +71,28 @@ const client = createClient({ key: 'your-ably-api-key', clientId: 'me', logLevel
 ```
 
 Use the debug build whenever you need the full logs, whether while developing or in production when Ably support asks you for logs to diagnose an issue. It is larger than the package root. The plugins and the React hooks work with a client from either entry point.
+
+## MessagePack
+
+On the web and React Native, the client from `@ably/pubsub-device`, like the CDN bundle, leaves MessagePack out, to keep it small, so it uses JSON. Constructing a client there with `useBinaryProtocol: true` and no plugin throws an `ErrorInfo` with code 40019. To use the binary MessagePack protocol there, pass the `MsgPack` plugin from `@ably/pubsub-device/msgpack`:
+
+```javascript
+import { createClient } from '@ably/pubsub-device';
+import { MsgPack } from '@ably/pubsub-device/msgpack';
+
+const client = createClient({
+  key: 'your-ably-api-key',
+  clientId: 'me',
+  useBinaryProtocol: true,
+  plugins: { MsgPack },
+});
+```
+
+With the plugin, `useBinaryProtocol` chooses the protocol, and defaults to `false`, so set `useBinaryProtocol: true` as well, or the client keeps using JSON. The plugin works with a client from `@ably/pubsub-device/debug` or `@ably/pubsub-device/modular` too.
+
+From the CDN, load `msgpack.umd.min.js` alongside `ably.min.js` and pass `plugins: { MsgPack: AblyMsgPackPlugin.MsgPack }`.
+
+On Node.js, the client includes MessagePack and uses it by default, as `@ably/pubsub-server` does, so it needs no plugin. Passing the plugin there is harmless, so code shared between Node.js and the web can pass it on both.
 
 ## Static helpers
 

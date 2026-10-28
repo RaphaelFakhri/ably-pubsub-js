@@ -646,32 +646,32 @@ function registerAblyModularTests(Helper) {
         describe('without MsgPack', () => {
           describe('BaseHttp', () => {
             /** @nospec */
-            it('uses JSON', async function () {
-              const client = new BaseHttp(
-                this.test.helper.ablyClientOptions({ useBinaryProtocol: true, plugins: { FetchRequest } }),
-              );
-              await testHttpUsesContentType(client, 'application/json');
+            it('throws', function () {
+              expect(
+                () =>
+                  new BaseHttp(
+                    this.test.helper.ablyClientOptions({ useBinaryProtocol: true, plugins: { FetchRequest } }),
+                  ),
+              ).to.throw('useBinaryProtocol is true but the MsgPack plugin is not provided');
             });
           });
 
           describe('BaseRealtime', () => {
             /** @nospec */
-            it('uses JSON', async function () {
-              const helper = this.test.helper;
-              const client = new BaseRealtime(
-                helper.ablyClientOptions({
-                  useBinaryProtocol: true,
-                  autoConnect: false,
-                  plugins: {
-                    WebSocketTransport,
-                    FetchRequest,
-                  },
-                }),
-              );
-
-              await helper.monitorConnectionThenCloseAndFinishAsync(async () => {
-                await testRealtimeUsesFormat(client, 'json');
-              }, client);
+            it('throws', function () {
+              expect(
+                () =>
+                  new BaseRealtime(
+                    this.test.helper.ablyClientOptions({
+                      useBinaryProtocol: true,
+                      autoConnect: false,
+                      plugins: {
+                        WebSocketTransport,
+                        FetchRequest,
+                      },
+                    }),
+                  ),
+              ).to.throw('useBinaryProtocol is true but the MsgPack plugin is not provided');
             });
           });
         });
