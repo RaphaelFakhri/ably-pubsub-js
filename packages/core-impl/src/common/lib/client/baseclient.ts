@@ -68,6 +68,16 @@ class BaseClient {
       'BaseClient()',
       'initialized with clientOptions ' + Platform.Config.inspect(options),
     );
+    // A raised logLevel shows little in a stripped build, so say why, rather than leave the developer
+    // wondering where the logs went. Logged at error level, the only level stripping keeps.
+    if (Logger.logsStripped && this.logger.shouldLog(Logger.LOG_MAJOR)) {
+      Logger.logAction(
+        this.logger,
+        Logger.LOG_ERROR,
+        'BaseClient()',
+        'logLevel is above error, but this build of the client has most logs below error level stripped, so it shows only some of them. To see every log, create the client with createClient from @ably/pubsub-device/debug.',
+      );
+    }
 
     this._MsgPack = options.plugins?.MsgPack ?? null;
     const normalOptions = (this.options = Defaults.normaliseOptions(options, this._MsgPack, this.logger));

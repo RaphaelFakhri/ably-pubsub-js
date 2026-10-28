@@ -42,6 +42,7 @@ Everything a device needs is exported here, so you never need to add `@ably/pubs
 | Import from                             | What you get                                                    |
 | --------------------------------------- | --------------------------------------------------------------- |
 | `@ably/pubsub-device`                   | `createClient`, plus the core's public API and type surface     |
+| `@ably/pubsub-device/debug`             | The same, for a build that keeps every log                      |
 | `@ably/pubsub-device/modular`           | `createClient` for a tree-shakable client, and its plugins      |
 | `@ably/pubsub-device/react`             | The React hooks: `AblyProvider`, `useChannel`, `usePresence`, … |
 | `@ably/pubsub-device/liveobjects`       | The LiveObjects plugin                                          |
@@ -55,6 +56,22 @@ import { AblyProvider, useChannel } from '@ably/pubsub-device/react';
 import { LiveObjects } from '@ably/pubsub-device/liveobjects';
 import { Push } from '@ably/pubsub-device/push';
 ```
+
+## Logging
+
+The client from `@ably/pubsub-device` has most of its logs below error level stripped, to keep it small and keep the detail of the client's internals out of what ships to your users. It keeps its error logs, a few warnings, and the logs of each protocol message and HTTP request it sends and receives, which it logs at level `4`. The push and LiveObjects plugins keep all their logs. So a `logLevel` above error shows only part of what the client does, and a `logHandler` receives only those logs. A client created with a `logLevel` above error logs a warning saying so.
+
+To see every log, import `createClient` from `@ably/pubsub-device/debug` instead. It is the same client, and exports everything the root does, from a build that keeps every log. Choose how much it logs with the `logLevel` client option:
+
+```javascript
+import { createClient } from '@ably/pubsub-device/debug';
+
+const client = createClient({ key: 'your-ably-api-key', clientId: 'me', logLevel: 4 });
+```
+
+Use the debug build whenever you need the full logs, whether while developing or in production when Ably support asks you for logs to diagnose an issue. It is larger than the package root. The plugins and the React hooks work with a client from either entry point.
+
+## Static helpers
 
 The root entry point also exports the `Message`, `PresenceMessage`, `Annotation` and `Crypto` classes, whose static methods need no client: for example, `Message.fromEncoded()` decodes a message received from a source other than a channel, such as a webhook or a queue, and `Crypto.generateRandomKey()` generates a key for an encrypted channel.
 

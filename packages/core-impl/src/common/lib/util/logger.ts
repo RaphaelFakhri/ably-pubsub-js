@@ -83,6 +83,11 @@ class Logger {
   static readonly LOG_MICRO: LogLevels = LogLevels.Micro;
 
   /**
+   * Whether this build has had its `Logger.logAction(...)` calls below error level stripped. The `stripLogs` build transform sets it to `true`, so do not compute it or rename it.
+   */
+  static readonly logsStripped: boolean = false;
+
+  /**
    * This logger instance should only be used when there is no more appropriate logger to use, for example when implementing a public static method or function whose API doesn’t accept any logging configuration.
    */
   static defaultLogger: Logger;
