@@ -91,6 +91,8 @@ const nativeScriptConfig = {
 //
 // It leaves MessagePack to the `MsgPack` plugin, as the package's other bundles do, by resolving
 // with the same export condition (see `excludeMsgpackCondition` in grunt/esbuild/build.js).
+//
+// packages/README.md lists both bundles, so update it when you change them.
 function createReactNativeConfig({ debug }) {
   const stripLogs = debug ? null : createStripLogs();
 
