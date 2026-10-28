@@ -1838,7 +1838,7 @@ export declare interface Auth {
    *
    * The client must have a way to obtain a token, so the resolved {@link AuthOptions} must include one of the [token authentication](https://ably.com/docs/auth/token) mechanisms `authCallback`, `authUrl`, or `key`. A client given only a literal token cannot request a new one and the call rejects with an {@link ErrorInfo}.
    *
-   * @param TokenParams - A {@link TokenParams} object.
+   * @param tokenParams - A {@link TokenParams} object.
    * @param authOptions - An {@link AuthOptions} object.
    * @returns A promise which, upon success, will be fulfilled with a {@link TokenDetails} object. Upon failure, the promise will be rejected with an {@link ErrorInfo} object which explains the error.
    * @example
@@ -1847,7 +1847,7 @@ export declare interface Auth {
    * ```
    * @see https://ably.com/docs/pub-sub/api/javascript/realtime/auth#request-token
    */
-  requestToken(TokenParams?: TokenParams, authOptions?: AuthOptions): Promise<TokenDetails>;
+  requestToken(tokenParams?: TokenParams, authOptions?: AuthOptions): Promise<TokenDetails>;
   /**
    * Revokes the tokens specified by the provided array of {@link TokenRevocationTargetSpecifier}s.
    *

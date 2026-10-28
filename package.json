@@ -82,7 +82,7 @@
     "webpack-cli": "^5.0.1"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=22"
   },
   "scripts": {
     "start:react": "npx vite serve",
