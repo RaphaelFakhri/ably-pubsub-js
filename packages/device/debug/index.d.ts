@@ -3,11 +3,11 @@ import type { ClientOptions, PubSubClient } from '../index.js';
 /**
  * Everything `@ably/pubsub-device` exports, from a build of it that keeps every log.
  *
- * The package root strips most logs below error level from the client, so a `logLevel` above
- * error there shows only part of what the client does. This entry point is the same client with
- * full logging, for diagnosing an app, in development or in production. It is larger than the
- * package root.
- * On Node.js, the package root keeps every log, and this entry point resolves to it.
+ * On the web and React Native, the package root strips most logs below error level from the
+ * client, so a `logLevel` above error there shows only part of what the client does. This entry
+ * point is the same client with full logging, for diagnosing an app, in development or in
+ * production. It is larger than the package root. On Node.js, the package root keeps every log,
+ * and this entry point resolves to it.
  */
 export * from '../index.js';
 
