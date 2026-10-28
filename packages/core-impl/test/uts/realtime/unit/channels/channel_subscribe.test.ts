@@ -936,7 +936,7 @@ describe('uts/realtime/unit/channels/channel_subscribe', function () {
           mock.active_connection!.send_to_client({
             action: 11, // ATTACHED
             channel: msg.channel,
-            flags: 0,
+            flags: 1 << 18, // MESSAGE_SUBSCRIBE
           });
         }
       },
@@ -1015,7 +1015,7 @@ describe('uts/realtime/unit/channels/channel_subscribe', function () {
           mock.active_connection!.send_to_client({
             action: 11,
             channel: msg.channel,
-            flags: 0,
+            flags: 1 << 18, // MESSAGE_SUBSCRIBE
           });
         }
       },
@@ -1108,7 +1108,7 @@ describe('uts/realtime/unit/channels/channel_subscribe', function () {
           mock.active_connection!.send_to_client({
             action: 11,
             channel: msg.channel,
-            flags: 0,
+            flags: 1 << 18, // MESSAGE_SUBSCRIBE
           });
         }
       },
@@ -1205,7 +1205,7 @@ describe('uts/realtime/unit/channels/channel_subscribe', function () {
           mock.active_connection!.send_to_client({
             action: 11,
             channel: msg.channel,
-            flags: 0,
+            flags: 1 << 18, // MESSAGE_SUBSCRIBE
           });
         }
       },
@@ -1313,7 +1313,7 @@ describe('uts/realtime/unit/channels/channel_subscribe', function () {
           mock.active_connection!.send_to_client({
             action: 11,
             channel: msg.channel,
-            flags: 0,
+            flags: 1 << 18, // MESSAGE_SUBSCRIBE
           });
         }
       },

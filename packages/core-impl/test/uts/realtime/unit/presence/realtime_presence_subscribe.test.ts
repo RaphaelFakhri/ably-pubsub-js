@@ -580,6 +580,7 @@ describe('uts/realtime/unit/presence/realtime_presence_subscribe', function () {
           mock.active_connection!.send_to_client({
             action: 11, // ATTACHED
             channel: channelName,
+            flags: 1 << 19, // PRESENCE_SUBSCRIBE
           });
         }
       },

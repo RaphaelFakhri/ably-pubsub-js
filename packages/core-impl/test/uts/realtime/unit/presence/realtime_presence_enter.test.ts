@@ -1052,7 +1052,7 @@ describe('uts/realtime/unit/presence/realtime_presence_enter', function () {
           conn!.send_to_client({
             action: 11,
             channel: channelName,
-            flags: 1, // HAS_PRESENCE
+            flags: 1 | (1 << 19), // HAS_PRESENCE | PRESENCE_SUBSCRIBE
           });
         } else if (msg.action === 14) {
           // PRESENCE
@@ -1189,7 +1189,7 @@ describe('uts/realtime/unit/presence/realtime_presence_enter', function () {
           conn!.send_to_client({
             action: 11,
             channel: channelName,
-            flags: 1, // HAS_PRESENCE
+            flags: 1 | (1 << 19), // HAS_PRESENCE | PRESENCE_SUBSCRIBE
           });
         } else if (msg.action === 14) {
           capturedPresenceA.push(msg);
@@ -1238,7 +1238,7 @@ describe('uts/realtime/unit/presence/realtime_presence_enter', function () {
           conn!.send_to_client({
             action: 11,
             channel: channelName,
-            flags: 1, // HAS_PRESENCE
+            flags: 1 | (1 << 19), // HAS_PRESENCE | PRESENCE_SUBSCRIBE
           });
         }
       },

@@ -261,13 +261,7 @@ class RealtimePresence extends EventEmitter {
         remediation:
           'Include "presence_subscribe" in the channel modes: realtime.channels.get(name, { modes: ["presence_subscribe", ...] }), or call channel.setOptions({ modes: [...] }) on an existing channel to trigger a reattach. Alternatively, omit modes entirely and ensure your token/API-key capability permits subscribe on this channel. If you have the Ably CLI installed, `ably auth keys list` shows your key\'s capabilities.',
       });
-      if (this.channel.client.options.strictMode === true) throw err;
-      Logger.logActionNoStrip(
-        this.logger,
-        Logger.LOG_ERROR,
-        'RealtimePresence.get()',
-        err.message + '; remediation=' + err.remediation + Logger.silentFailureLogSuffix(),
-      );
+      throw err;
     }
 
     const members = this.members;

@@ -67,6 +67,17 @@ The `ably/promises` and `ably/callbacks` subpaths existed only to help v1 code f
 
 The v1 callback-signature overloads that TypeScript showed struck through are also gone from the type definitions. The runtime guards that reject a v1-style callback argument remain, so such a call still fails with an error explaining what to do rather than failing only at compile time.
 
+<h3 id="strict-mode">Handle the errors that <code>strictMode</code> enables</h3>
+
+The `strictMode` client option is removed, and its strict behaviour is now the only behaviour. Two calls that v2 let fail silently, logging an error, now reject:
+
+| Call                  | Rejects when the channel is attached without | Error code |
+| --------------------- | -------------------------------------------- | ---------- |
+| `channel.subscribe()` | the `subscribe` mode                         | 90009      |
+| `presence.get()`      | the `presence_subscribe` mode                | 91008      |
+
+In v2 these calls logged an error naming `strictMode`. To find them before upgrading, set `strictMode: true` on v2 and fix each call that rejects: request the missing mode in `ChannelOptions.modes`, or make sure your key or token has the subscribe capability on the channel. Then remove `strictMode` from your client options. `channel.subscribe()` still registers the listener when it rejects.
+
 <h3 id="channel-release">Detach a channel before you release it</h3>
 
 `channels.release(name)` now throws an `ErrorInfo` with code 90011 unless the channel is in the `initialized`, `detached` or `failed` state. In v2 it detached an attached channel itself and removed it once the detach completed. In the meantime, `channels.get()` for the same name returned the channel about to be removed, which then received no further messages. In v3 `release()` removes the channel immediately or not at all.
@@ -378,6 +389,7 @@ Their behaviour is unchanged.
 | `device()` removed. The HTTP client also has no `getDevice()`, and its `push` offers only `admin`                                                                                                                                                                  | `await getDevice()` on the realtime client ([above](#get-device))                                         |
 | `Connection.recoveryKey` removed                                                                                                                                                                                                                                   | `Connection.createRecoveryKey()` ([above](#recovery-key))                                                 |
 | `channels.release()` throws 90011 unless the channel is initialized, detached or failed                                                                                                                                                                            | Detach the channel first ([above](#channel-release))                                                      |
+| `strictMode` client option removed: `channel.subscribe()` without the `subscribe` mode rejects with 90009, and `presence.get()` without `presence_subscribe` rejects with 91008                                                                                    | Request the mode, then drop `strictMode` ([above](#strict-mode))                                          |
 | v1 callback-signature overloads removed from the type definitions                                                                                                                                                                                                  | Await the returned promise ([above](#entry-point-shims))                                                  |
 | LiveObjects `ObjectOperation.mapOp`, `.counterOp`, `.map`, `.counter` and `ObjectData.value` removed, with the `ObjectsMapOp`, `ObjectsCounterOp`, `ObjectsMap` and `ObjectsCounter` types                                                                         | Use the typed fields ([above](#liveobjects-wire-fields))                                                  |
 | MessagePack is a plugin for the web and React Native clients of `@ably/pubsub-device` and the CDN bundle; `useBinaryProtocol: true` without it throws 40019                                                                                                        | Pass `MsgPack` from `@ably/pubsub-device/msgpack`, or drop `useBinaryProtocol` ([above](#msgpack))        |

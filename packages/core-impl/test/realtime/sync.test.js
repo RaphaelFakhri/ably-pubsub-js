@@ -56,7 +56,7 @@ define(['ably', 'shared_helper', 'async', 'chai'], function (Ably, Helper, async
         createPM({
           action: 11,
           channel: channelName,
-          flags: 1,
+          flags: 1 | (1 << 19), // HAS_PRESENCE | PRESENCE_SUBSCRIBE
         }),
       );
 
@@ -189,7 +189,7 @@ define(['ably', 'shared_helper', 'async', 'chai'], function (Ably, Helper, async
         createPM({
           action: 11,
           channel: channelName,
-          flags: 1,
+          flags: 1 | (1 << 19), // HAS_PRESENCE | PRESENCE_SUBSCRIBE
         }),
       );
 
@@ -309,7 +309,7 @@ define(['ably', 'shared_helper', 'async', 'chai'], function (Ably, Helper, async
         createPM({
           action: 11,
           channel: channelName,
-          flags: 1,
+          flags: 1 | (1 << 19), // HAS_PRESENCE | PRESENCE_SUBSCRIBE
         }),
       );
 
@@ -407,7 +407,7 @@ define(['ably', 'shared_helper', 'async', 'chai'], function (Ably, Helper, async
         createPM({
           action: 11,
           channel: channelName,
-          flags: 1,
+          flags: 1 | (1 << 19), // HAS_PRESENCE | PRESENCE_SUBSCRIBE
         }),
       );
 
@@ -509,6 +509,7 @@ define(['ably', 'shared_helper', 'async', 'chai'], function (Ably, Helper, async
         createPM({
           action: 11,
           channel: channelName,
+          flags: 1 << 19, // PRESENCE_SUBSCRIBE
         }),
       );
 
