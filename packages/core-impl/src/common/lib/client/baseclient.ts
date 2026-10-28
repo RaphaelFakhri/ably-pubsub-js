@@ -75,7 +75,7 @@ class BaseClient {
         this.logger,
         Logger.LOG_ERROR,
         'BaseClient()',
-        'logLevel is above error, but this build of the client has most logs below error level stripped, so it shows only some of them. To see every log, create the client with createClient from @ably/pubsub-device/debug.',
+        'logLevel is above error, but this build of the client has most logs below error level stripped, so it shows only some of them. To see every log, create the client with createClient from @ably/pubsub-device/debug. If you load the client from the CDN, load ably.debug.min.js in place of ably.min.js.',
       );
     }
 

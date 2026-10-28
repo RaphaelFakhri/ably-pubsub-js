@@ -51,6 +51,7 @@ const requiredArtifacts = {
     'dist/react-native.js',
     'dist/react/cjs/index.js',
     'dist/cdn/ably.min.js',
+    'dist/cdn/ably.debug.min.js',
     'index.d.mts',
   ],
   'packages/server': ['dist/index.js', 'dist/index.mjs', 'dist/node.js', 'index.d.mts'],

@@ -181,13 +181,13 @@ const pubsubPackageConfigs = [
 //
 // Like the npm bundles, they are built with `excludeMsgpackCondition`, so `ably.js` leaves MessagePack
 // to the `MsgPack` plugin, which `msgpack.umd.js` serves as `AblyMsgPackPlugin.MsgPack`.
-function createCdnConfigs(entry, libraryName, outName, external = []) {
+function createCdnConfigs(entry, libraryName, outName, { external = [], plugins = [] } = {}) {
   return [false, true].map((minify) => ({
     bundle: true,
     sourcemap: true,
     format: 'umd',
     banner: { js: '/*' + banner + '*/' },
-    plugins: [umdWrapper.default({ libraryName, amdNamedModule: false })],
+    plugins: [...plugins, umdWrapper.default({ libraryName, amdNamedModule: false })],
     target: 'es2020',
     minify,
     external,
@@ -198,7 +198,10 @@ function createCdnConfigs(entry, libraryName, outName, external = []) {
 }
 
 const cdnConfigs = [
-  ...createCdnConfigs('index', 'AblyPubSub', 'ably'),
+  // As with the package's npm bundles, `ably` strips most logs below error level, and `ably.debug`
+  // is the same bundle with full logging, for diagnosing an app.
+  ...createCdnConfigs('index', 'AblyPubSub', 'ably', { plugins: [stripLogsPlugin] }),
+  ...createCdnConfigs('index', 'AblyPubSub', 'ably.debug'),
   ...createCdnConfigs('push', 'AblyPushPlugin', 'push.umd'),
   ...createCdnConfigs('liveobjects', 'AblyLiveObjectsPlugin', 'liveobjects.umd'),
   ...createCdnConfigs('msgpack', 'AblyMsgPackPlugin', 'msgpack.umd'),
