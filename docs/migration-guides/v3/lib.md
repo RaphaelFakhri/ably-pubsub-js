@@ -151,6 +151,13 @@ const client = createClient({ key, clientId: 'me', useBinaryProtocol: true, plug
 
 From the CDN, load `msgpack.umd.min.js` alongside `ably.min.js` and pass `plugins: { MsgPack: AblyMsgPackPlugin.MsgPack }`. To use JSON instead, remove `useBinaryProtocol: true`.
 
+<h3 id="es2020">Check that your runtimes and build tools support ES2020</h3>
+
+v3 is compiled to ES2020 rather than ES2017, so the published code uses syntax such as optional chaining (`?.`) and nullish coalescing (`??`) untranspiled. A runtime without ES2020 support fails to parse it.
+
+- From npm, if you support such runtimes, configure your bundler to transpile `@ably/pubsub-device` or `@ably/pubsub-server`. Some older bundlers, such as webpack 4, cannot parse ES2020 syntax at all, and need upgrading.
+- From the CDN, nothing transpiles the bundle for you, so it runs only in browsers that support ES2020.
+
 <h2 id="use-the-factories">Create your clients through the factories</h2>
 
 The `Realtime` and `Rest` constructors are gone. A client constructed directly would declare no side, so the factories are now the only way to create one, and they are how a client says which side it is on.
@@ -309,3 +316,4 @@ What the rename deliberately leaves alone: the `restAgentOptions` and `idempoten
 | LiveObjects `ObjectOperation.mapOp`, `.counterOp`, `.map`, `.counter` and `ObjectData.value` removed, with the `ObjectsMapOp`, `ObjectsCounterOp`, `ObjectsMap` and `ObjectsCounter` types | Use the typed fields ([above](#liveobjects-wire-fields))                                                  |
 | MessagePack is a plugin for the web and React Native clients of `@ably/pubsub-device` and the CDN bundle; `useBinaryProtocol: true` without it throws 40019                                | Pass `MsgPack` from `@ably/pubsub-device/msgpack`, or drop `useBinaryProtocol` ([above](#msgpack))        |
 | `Ably-Agent` SDK identifier is `ably-pubsub-js`, and the side entries are versionless                                                                                                      | Update anything matching on it ([step 5](#agent))                                                         |
+| The published code, including the CDN bundle, targets ES2020 instead of ES2017                                                                                                             | Transpile the SDK in your bundler, or drop runtimes without ES2020 support ([above](#es2020))             |
