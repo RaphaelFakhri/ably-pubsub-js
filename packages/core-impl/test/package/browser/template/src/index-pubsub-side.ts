@@ -137,7 +137,16 @@ globalThis.testAblyPackage = async function () {
     useBinaryProtocol: true,
     plugins: { Push, LiveObjects, MsgPack },
   });
-  void withPlugins.channels.get('channel').push;
+  // The device client and its channels offer the APIs that act on the local device as a push target,
+  // which the Push plugin provides.
+  void withPlugins.push.admin;
+  if (typeof withPlugins.push.activate !== 'function' || typeof withPlugins.getDevice !== 'function') {
+    throw new Error('the device client has no push.activate() or getDevice() with the Push plugin registered');
+  }
+  const pushChannel: PubSubDevice.RealtimeChannel = withPlugins.channels.get('channel');
+  if (typeof pushChannel.push.subscribeDevice !== 'function') {
+    throw new Error('a device channel has no push.subscribeDevice() with the Push plugin registered');
+  }
   withPlugins.close();
 
   // The device's browser bundles leave MessagePack out, so a client from them uses JSON until it is
@@ -217,7 +226,7 @@ globalThis.testAblyPackage = async function () {
   void serverHttpChannel;
 
   // A server is not a push target, so both server clients offer only push admin. Activating a
-  // device for push is the device client's concern.
+  // device for push is the device client's concern, checked on `withPlugins` above.
   void serverHttp.push.admin;
   // @ts-expect-error
   void serverHttp.push.activate;
@@ -230,23 +239,23 @@ globalThis.testAblyPackage = async function () {
   void serverRealtime.push.deactivate;
   // @ts-expect-error
   void serverRealtime.getDevice;
-  void device.push.admin;
-  void device.push.activate;
-  void device.getDevice;
 
   // Subscribing to push on a channel subscribes the local device or its clientId, so only the
-  // device's channels offer it, and only the device's options take the Push plugin.
-  // @ts-expect-error
-  void serverHttp.channels.get('channel').push;
-  // @ts-expect-error
-  void serverRealtime.channels.get('channel').push;
-  // @ts-expect-error
-  type ServerPushChannel = PubSubServer.PushChannel;
-  // @ts-expect-error
-  const serverWithPush = () => PubSubServer.createRealtimeClient({ key: 'app.key:secret', plugins: { Push } });
-  void serverWithPush;
-  const pushChannel: PubSubDevice.RealtimeChannel = device.channels.get('channel');
-  void pushChannel.push.subscribeDevice;
+  // device's channels offer it (checked on `withPlugins` above), and only the device's options take
+  // the Push plugin. These are type checks only, so they sit in a function that is never called: the
+  // server clients have no Push plugin, and without it the `push` getter throws, @ts-expect-error or
+  // not.
+  const pushTypeChecks = () => {
+    // @ts-expect-error
+    void serverHttp.channels.get('channel').push;
+    // @ts-expect-error
+    void serverRealtime.channels.get('channel').push;
+    // @ts-expect-error
+    type ServerPushChannel = PubSubServer.PushChannel;
+    // @ts-expect-error
+    PubSubServer.createRealtimeClient({ key: 'app.key:secret', plugins: { Push } });
+  };
+  void pushTypeChecks;
   // The device's ClientOptions is the one that takes the Push plugin and the web push options, so
   // an options object annotated with it, rather than with an explicit plugin map, still compiles.
   const deviceOptions: PubSubDevice.ClientOptions = {
