@@ -2,6 +2,59 @@
 
 This contains only the most important and/or user-facing changes; for a full changelog, see the commit history.
 
+## [3.0.0](https://github.com/ably/ably-pubsub-js/tree/3.0.0) (2026-10-29)
+
+The 3.0.0 release makes it clear what to use on a device and what to use on a server. The SDK is now split by where your code runs. Install `@ably/pubsub-device` for code that runs on an end user's device, such as a browser or a mobile app, or `@ably/pubsub-server` for code that runs on your own infrastructure. Each package offers only the clients and APIs that make sense on its side. The package names are also what coding assistants see in the install step and the import line, so they get the choice right too.
+
+Device bundles are also smaller. MessagePack is now an opt-in plugin and most debug logging is stripped, so a web app that bundles `@ably/pubsub-device` from npm ships about 15% less minified code than with v2.30.0, or about 12% less gzipped. The CDN bundle shrinks by about the same.
+
+v3 also removes the APIs and client options deprecated in v2.
+
+Below is an overview of the major changes in this release.
+
+Please refer to the ably-js v3 [lib migration guide](./docs/migration-guides/v3/lib.md) for the full details, including a list of all breaking changes and instructions on how to address them.
+
+### Per-side packages
+
+This repository no longer publishes `ably`. Install the package for the side of the connection your code runs on:
+
+- `@ably/pubsub-device` for code that runs on an end user's device: a browser, React Native, Electron, or a mobile or desktop app. It offers a single realtime client, `PubSubClient`, which includes the device-side push APIs.
+- `@ably/pubsub-server` for code that runs on infrastructure you operate: a Node.js server, a container, or a serverless function. It offers both a realtime client, `PubSubRealtimeClient`, and an HTTP client, `PubSubHttpClient`.
+
+Clients are created through factory methods instead of constructors: `createClient` from `@ably/pubsub-device`, and `createRealtimeClient` and `createHttpClient` from `@ably/pubsub-server`.
+
+### Client API naming
+
+- `RealtimeClient` is renamed `PubSubClient` on a device and `PubSubRealtimeClient` on a server. `RestClient` is renamed `PubSubHttpClient`.
+- `Rest` is renamed `Http` across the public API, the modular plugins and the LiveObjects types, including the HTTP client's `HttpChannel` and `HttpPresence`.
+- The `Message`, `PresenceMessage`, `Annotation` and `Crypto` statics are named class exports.
+- The `Ably`-prefixed React Hooks exports are named after the Pub/Sub client, for example `AblyProvider` is now `PubSubClientProvider` and `useAbly` is now `usePubSubClient`. They are exported from `@ably/pubsub-device/react` and take a `PubSubClient`.
+
+### Push notifications
+
+- `getDevice()`, `push.activate()`, `push.deactivate()`, `push.updateToken()` and `channel.push` exist only on the `@ably/pubsub-device` client. A server is not a push target, so the clients of `@ably/pubsub-server` offer only `push.admin`. On a server, manage push channel subscriptions with `push.admin.channelSubscriptions`.
+- The `Push` plugin and the `pushServiceWorkerUrl` client option are available only in `@ably/pubsub-device`.
+
+### Bundle and log changes
+
+- MessagePack is a plugin for the web and React Native clients of `@ably/pubsub-device` and for the CDN bundle, and is required to use the binary protocol there. Setting `useBinaryProtocol: true` without passing the `MsgPack` plugin from `@ably/pubsub-device/msgpack` throws error 40019.
+- The `@ably/pubsub-device` web, React Native, modular and CDN bundles strip most logs below error level. Use `@ably/pubsub-device/debug` or the debug CDN bundle to keep every log.
+- The CDN bundle's global is renamed from `Ably` to `AblyPubSub`.
+
+### Removed APIs
+
+- The `environment`, `restHost` and `realtimeHost` client options are removed in favour of `endpoint`. They are silently ignored, not rejected.
+- The `strictMode` client option is removed. `channel.subscribe()` without the `subscribe` mode always rejects, as does `presence.get()` without `presence_subscribe`.
+- `device()`, `Connection.recoveryKey`, the `ably/promises` and `ably/callbacks` entry points, the v1 callback overloads and the deprecated LiveObjects wire fields are removed.
+- `channels.release()` throws unless the channel is `initialized`, `detached` or `failed`.
+
+### Supported platforms changes
+
+- Support for Node.js versions lower than 22 has been dropped.
+- The published code, including the CDN bundle, targets ES2020 instead of ES2017.
+
+[Full Changelog](https://github.com/ably/ably-pubsub-js/compare/2.30.0...3.0.0)
+
 ## [2.30.0](https://github.com/ably/ably-pubsub-js/tree/2.30.0) (2026-10-22)
 
 [Full Changelog](https://github.com/ably/ably-pubsub-js/compare/2.29.0...2.30.0)
