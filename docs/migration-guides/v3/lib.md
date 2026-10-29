@@ -45,6 +45,8 @@ The synchronous `device()` accessor on the client is removed. `getDevice()` repl
 + const device = await client.getDevice();
 ```
 
+`getDevice()` exists only on the realtime client. The HTTP client has neither `device()` nor `getDevice()` in v3, and its `push` property is an `HttpPush`, which offers only `push.admin`. Activating, deactivating and inspecting the local device for push notifications are device-side operations: use the realtime client from `@ably/pubsub-device` for them.
+
 <h3 id="recovery-key">Replace <code>connection.recoveryKey</code> with <code>connection.createRecoveryKey()</code></h3>
 
 ```diff
@@ -64,6 +66,18 @@ The `ably/promises` and `ably/callbacks` subpaths existed only to help v1 code f
 ```
 
 The v1 callback-signature overloads that TypeScript showed struck through are also gone from the type definitions. The runtime guards that reject a v1-style callback argument remain, so such a call still fails with an error explaining what to do rather than failing only at compile time.
+
+<h3 id="channel-release">Detach a channel before you release it</h3>
+
+`channels.release(name)` now throws an `ErrorInfo` with code 90011 unless the channel is in the `initialized`, `detached` or `failed` state. In v2 it detached an attached channel itself and removed it once the detach completed. In the meantime, `channels.get()` for the same name returned the channel about to be removed, which then received no further messages. In v3 `release()` removes the channel immediately or not at all.
+
+Detach the channel and await the detach before releasing it. This works the same way on v2:
+
+```diff
+- client.channels.release('chat');
++ await client.channels.get('chat').detach();
++ client.channels.release('chat');
+```
 
 <h3 id="liveobjects-wire-fields">Stop reading the deprecated LiveObjects wire fields</h3>
 
@@ -211,6 +225,10 @@ In the modular variant, the factory comes from the `modular` subpath and takes o
 
 If an SDK of your own sits on top of this one and sets its own `agents` entries, those are preserved: the side entry is added alongside them.
 
+<h3 id="agent">The <code>Ably-Agent</code> header names the package family and the side</h3>
+
+The SDK identifier in the `Ably-Agent` header is now `ably-pubsub-js/<version>` instead of `ably-js/<version>`. Alongside it, the factories add a versionless entry naming the side the client declares: `ably-pubsub-device` or `ably-pubsub-server`. If you match on the `Ably-Agent` header, for example in a proxy, a log filter or a dashboard, update the match to the new identifiers.
+
 <h3 id="what-declaring-a-side-means">What declaring a side means</h3>
 
 Device traffic counts toward your account's monthly active users. On an account billed by MAU:
@@ -262,6 +280,8 @@ In the main API surface:
 | v2                   | v3                   |
 | -------------------- | -------------------- |
 | `RestClient`         | `PubSubHttpClient`   |
+| `Channel`            | `HttpChannel`        |
+| `Presence`           | `HttpPresence`       |
 | `RestAnnotations`    | `HttpAnnotations`    |
 | `RestHistoryParams`  | `HttpHistoryParams`  |
 | `RestPresenceParams` | `HttpPresenceParams` |
@@ -355,12 +375,13 @@ Their behaviour is unchanged.
 | `Message`, `PresenceMessage`, `Annotation` and `Crypto` statics moved to named class exports; `MessageStatic`, `PresenceMessageStatic` and `AnnotationStatic` removed                                                                                              | Import them by name ([step 4](#static-helpers))                                                           |
 | `@ably/pubsub-device` offers no HTTP client, and omits its types and its LiveObjects API                                                                                                                                                                           | Use the realtime client, or `@ably/pubsub-server` on infrastructure you operate ([step 2](#import-paths)) |
 | `environment`, `restHost` and `realtimeHost` client options removed — **silently ignored**, not rejected                                                                                                                                                           | Use `endpoint` ([above](#endpoint))                                                                       |
-| `device()` removed from the `Http` and `Realtime` clients                                                                                                                                                                                                          | `await getDevice()` ([above](#get-device))                                                                |
+| `device()` removed. The HTTP client also has no `getDevice()`, and its `push` offers only `admin`                                                                                                                                                                  | `await getDevice()` on the realtime client ([above](#get-device))                                         |
 | `Connection.recoveryKey` removed                                                                                                                                                                                                                                   | `Connection.createRecoveryKey()` ([above](#recovery-key))                                                 |
+| `channels.release()` throws 90011 unless the channel is initialized, detached or failed                                                                                                                                                                            | Detach the channel first ([above](#channel-release))                                                      |
 | v1 callback-signature overloads removed from the type definitions                                                                                                                                                                                                  | Await the returned promise ([above](#entry-point-shims))                                                  |
 | LiveObjects `ObjectOperation.mapOp`, `.counterOp`, `.map`, `.counter` and `ObjectData.value` removed, with the `ObjectsMapOp`, `ObjectsCounterOp`, `ObjectsMap` and `ObjectsCounter` types                                                                         | Use the typed fields ([above](#liveobjects-wire-fields))                                                  |
 | MessagePack is a plugin for the web and React Native clients of `@ably/pubsub-device` and the CDN bundle; `useBinaryProtocol: true` without it throws 40019                                                                                                        | Pass `MsgPack` from `@ably/pubsub-device/msgpack`, or drop `useBinaryProtocol` ([above](#msgpack))        |
-| `Ably-Agent` SDK identifier is `ably-pubsub-js`, and the side entries are versionless                                                                                                                                                                              | Update anything matching on it ([step 5](#agent))                                                         |
+| `Ably-Agent` SDK identifier is `ably-pubsub-js`, and the side entries are versionless                                                                                                                                                                              | Update anything matching on it ([step 3](#agent))                                                         |
 | The published code, including the CDN bundle, targets ES2020 instead of ES2017                                                                                                                                                                                     | Transpile the SDK in your bundler, or drop runtimes without ES2020 support ([above](#es2020))             |
 | Node.js 22 or later required                                                                                                                                                                                                                                       | Upgrade Node.js ([step 2](#switch-package))                                                               |
 | CDN bundle global renamed from `Ably` to `AblyPubSub`                                                                                                                                                                                                              | Rename ([step 2](#import-paths))                                                                          |

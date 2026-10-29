@@ -523,12 +523,12 @@ export type AnyHttpLiveObject = {
 type HttpObjectData = Omit<ObjectData, 'value'>;
 
 /**
- * Module augmentation to add the `object` property to `Channel` (REST) when
+ * Module augmentation to add the `object` property to `HttpChannel` when
  * importing from '@ably/pubsub-core/liveobjects'. This ensures all LiveObjects types come from
  * the same module (CJS or ESM), avoiding type incompatibility issues.
  */
 declare module '@ably/pubsub-core' {
-  interface Channel {
+  interface HttpChannel {
     /**
      * A {@link HttpObject} object.
      */

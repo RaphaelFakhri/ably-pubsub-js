@@ -31,9 +31,6 @@ export const serverAgentIdentifier = 'ably-pubsub-server';
  * src/common/lib/util/defaults.ts turns each entry into an `Ably-Agent` token — but it is
  * deliberately absent from the public `ably.d.ts`, so it cannot be set through the types
  * this package consumes. The cast is confined to this module.
- *
- * Whether `agents` should be promoted to the public `ClientOptions` is an open question
- * for PDR-091, not an oversight here.
  */
 type ClientOptionsWithAgents = Ably.ClientOptions & {
   agents?: Record<string, string | undefined>;
