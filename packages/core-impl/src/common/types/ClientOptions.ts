@@ -1,5 +1,6 @@
 import { Modify } from './utils';
 import * as API from '@ably/pubsub-core/api';
+import type * as Device from '@ably/pubsub-core/device';
 import { ModularPlugins } from 'common/lib/client/modularplugins';
 import { StandardPlugins } from 'plugins';
 
@@ -8,7 +9,8 @@ export type RestAgentOptions = {
   maxSockets: number;
 };
 
-export default interface ClientOptions extends API.ClientOptions<API.CorePlugins & ModularPlugins & StandardPlugins> {
+export default interface ClientOptions
+  extends Device.ClientOptions<API.CorePlugins & ModularPlugins & StandardPlugins> {
   restAgentOptions?: RestAgentOptions;
   pushFullWait?: boolean;
   agents?: Record<string, string | undefined>;

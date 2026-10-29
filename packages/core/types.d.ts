@@ -4,7 +4,8 @@
  *
  * The declarations only the stateless HTTP client reaches live in ./http.d.ts, so that
  * `@ably/pubsub-device`, which has no HTTP client, can star-export this module alone. ./ably.d.ts
- * re-exports both.
+ * re-exports both. The declarations only the device client reaches live in ./device.d.ts, which
+ * only `@ably/pubsub-device` re-exports.
  *
  * The client classes are deliberately absent from both. A client built by constructing a class
  * directly declares no side, so clients come only from the factories in `@ably/pubsub-device` and
@@ -534,11 +535,6 @@ export interface ClientOptions<Plugins = CorePlugins> extends AuthOptions {
    * @defaultValue 65536
    */
   maxMessageSize?: number;
-
-  /**
-   * A URL pointing to a service worker script which is used as the target for web push notifications.
-   */
-  pushServiceWorkerUrl?: string;
 }
 
 /**
@@ -549,11 +545,6 @@ export interface CorePlugins {
    * A plugin capable of decoding `vcdiff`-encoded messages. For more information on how to configure a channel to use delta encoding, see the [documentation for the `@ably-forks/vcdiff-decoder` package](https://github.com/ably-forks/vcdiff-decoder#usage).
    */
   vcdiff?: any;
-
-  /**
-   * A plugin which allows the client to be the target of push notifications.
-   */
-  Push?: unknown;
 
   /**
    * A plugin which allows the client to use the MessagePack binary protocol. On the web and React Native, a client from `@ably/pubsub-device` or its CDN bundle has no MessagePack support of its own, and uses JSON unless it is given this plugin, which the package exports from `@ably/pubsub-device/msgpack` and the CDN serves as `AblyMsgPackPlugin.MsgPack` from `msgpack.umd.min.js`. Setting {@link ClientOptions.useBinaryProtocol} to `true` without this plugin throws when the client is constructed. On Node.js, a client from `@ably/pubsub-device` includes MessagePack, as does every client from `@ably/pubsub-server`, so it needs no plugin.
@@ -1521,7 +1512,7 @@ export type recoverConnectionCallback = (
 type StandardCallback<T> = (err: ErrorInfo | null, result?: T) => void;
 
 /**
- * A function passed to {@link Push.activate} in order to override the default implementation to register a device for push activation.
+ * A function passed to {@link device!DevicePush.activate} in order to override the default implementation to register a device for push activation.
  *
  * @param device - A DeviceDetails object representing the local device
  * @param callback - A callback to be invoked when the registration is complete
@@ -1529,7 +1520,7 @@ type StandardCallback<T> = (err: ErrorInfo | null, result?: T) => void;
 export type RegisterCallback = (device: DeviceDetails, callback: StandardCallback<DeviceDetails>) => void;
 
 /**
- * A function passed to {@link Push.activate} in order to override the default implementation to deregister a device for push activation.
+ * A function passed to {@link device!DevicePush.activate} in order to override the default implementation to deregister a device for push activation.
  *
  * @param device - A DeviceDetails object representing the local device
  * @param callback - A callback to be invoked when the deregistration is complete
@@ -1677,6 +1668,8 @@ export declare interface EventEmitter<CallbackType, ResultType, EventType> {
 
 /**
  * A client that extends the functionality of {@link PubSubHttpClient} and provides additional realtime-specific features.
+ *
+ * It is the realtime client of `@ably/pubsub-server`. The client from `@ably/pubsub-device` is a {@link device!PubSubClient}, which extends it with the APIs that act on the local device as a push target.
  */
 export declare interface PubSubRealtimeClient {
   /**
@@ -1763,12 +1756,6 @@ export declare interface PubSubRealtimeClient {
    * A {@link Push} object.
    */
   push: Push;
-  /**
-   * Retrieves a {@link LocalDevice} object that represents the current state of the device as a target for push notifications, loading it from persistent storage if necessary.
-   *
-   * @returns A promise which resolves to a {@link LocalDevice} object.
-   */
-  getDevice(): Promise<LocalDevice>;
 }
 
 /**
@@ -2271,39 +2258,6 @@ export declare interface RealtimeAnnotations {
 }
 
 /**
- * Enables devices to subscribe to push notifications for a channel.
- */
-export declare interface PushChannel {
-  /**
-   * Subscribes the device to push notifications for the channel.
-   */
-  subscribeDevice(): Promise<void>;
-
-  /**
-   * Unsubscribes the device from receiving push notifications for the channel.
-   */
-  unsubscribeDevice(): Promise<void>;
-
-  /**
-   * Subscribes all devices associated with the current device's `clientId` to push notifications for the channel.
-   */
-  subscribeClient(): Promise<void>;
-
-  /**
-   * Unsubscribes all devices associated with the current device's `clientId` from receiving push notifications for the channel.
-   */
-  unsubscribeClient(): Promise<void>;
-
-  /**
-   * Retrieves all push subscriptions for the channel. Subscriptions can be filtered using a params object.
-   *
-   * @param params - An object containing key-value pairs to filter subscriptions by. Can contain `clientId`, `deviceId` or a combination of both, and a `limit` on the number of subscriptions returned, up to 1,000.
-   * @returns a {@link PaginatedResult} object containing an array of {@link PushChannelSubscription} objects.
-   */
-  listSubscriptions(params?: Record<string, string>): Promise<PaginatedResult<PushChannelSubscription>>;
-}
-
-/**
  * Enables messages to be published and subscribed to. Also enables historic messages to be retrieved and provides access to the {@link RealtimePresence} object of a channel.
  */
 export declare interface RealtimeChannel extends EventEmitter<channelEventCallback, ChannelStateChange, ChannelEvent> {
@@ -2393,12 +2347,6 @@ export declare interface RealtimeChannel extends EventEmitter<channelEventCallba
    * A {@link RealtimePresence} object.
    */
   presence: RealtimePresence;
-  /**
-   * A {@link PushChannel} object that manages device push notification subscriptions for this channel. Accessing this property requires the `Push` plugin to be registered via {@link ClientOptions.plugins}. The default and modular builds do not bundle the `Push` plugin. If the plugin is absent, the getter throws an {@link ErrorInfo} rather than returning a {@link PushChannel}.
-   *
-   * @see https://ably.com/docs/pub-sub/api/javascript/realtime/realtime-channel#properties
-   */
-  push: PushChannel;
   /**
    * A {@link RealtimeAnnotations} object.
    */
@@ -3445,63 +3393,13 @@ export declare interface PushDeviceToken {
 }
 
 /**
- * Enables a device to be registered and deregistered from receiving push notifications.
+ * Enables the management of push notifications through Ably: device registrations, push channel subscriptions and publishing to devices. The APIs that act on the local device as a push target, such as activating it, are on {@link device!DevicePush}, which only the client from `@ably/pubsub-device` offers.
  */
 export declare interface Push {
   /**
    * A {@link PushAdmin} object.
    */
   admin: PushAdmin;
-
-  /**
-   * Activates the device for push notifications. Subsequently registers the device with Ably and stores the deviceIdentityToken in local storage.
-   *
-   * @param registerCallback - A function passed to override the default implementation to register the local device for push activation.
-   * @param updateFailedCallback - A callback to be invoked when the device registration failed to update.
-   */
-  activate(registerCallback?: RegisterCallback, updateFailedCallback?: ErrorCallback): Promise<void>;
-
-  /**
-   * Deactivates the device from receiving push notifications.
-   *
-   * @param deregisterCallback - A function passed to override the default implementation to deregister the local device for push activation.
-   */
-  deactivate(deregisterCallback?: DeregisterCallback): Promise<void>;
-
-  /**
-   * Updates the device's push token after the underlying push platform has rotated it, and synchronizes the new token with Ably by updating the device registration. Call this from your platform's token refresh listener, for example `messaging().onTokenRefresh()` of `@react-native-firebase/messaging`, once {@link activate | `activate()`} has completed.
-   *
-   * The synchronization with Ably is fire-and-forget: it is serialized with any in-flight `activate()`, `deactivate()` or earlier `updateToken()` synchronization rather than racing it, it is routed through the `registerCallback` passed to `activate()` when one was provided, and a synchronization failure is reported to the `updateFailedCallback` passed to `activate()`.
-   *
-   * @param token - The refreshed push token, in the same shape as returned by the `requestToken` callback of the `@ably/pubsub-core/react-native-push` plugin.
-   * @returns A promise which resolves once the refreshed token has been persisted locally and its synchronization with Ably has been initiated, and rejects if the token is malformed or the device is not activated for push notifications.
-   */
-  updateToken(token: PushDeviceToken): Promise<void>;
-}
-
-/**
- * Contains the device identity token and secret of a device.
- */
-export declare interface LocalDevice {
-  /**
-   * A unique ID generated by the device.
-   */
-  id: string;
-  /**
-   * A unique device secret generated by the Ably SDK.
-   */
-  deviceSecret: string;
-  /**
-   * A unique device identity token that the device uses to authenticate itself with Ably.
-   */
-  deviceIdentityToken?: string;
-
-  /**
-   * Retrieves push subscriptions active for the local device.
-   *
-   * @returns a {@link PaginatedResult} object containing an array of {@link PushChannelSubscription} objects for each push channel subscription active for the local device.
-   */
-  listSubscriptions(): Promise<PaginatedResult<PushChannelSubscription>>;
 }
 
 /**

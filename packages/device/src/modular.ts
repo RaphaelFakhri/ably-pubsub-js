@@ -7,7 +7,7 @@
 
 import { BaseRealtime } from '@ably/pubsub-core-impl/modular';
 import type { ModularPlugins } from '@ably/pubsub-core/modular';
-import type { ClientOptions, CorePlugins, PubSubRealtimeClient } from '@ably/pubsub-core/api';
+import type { ClientOptions, DevicePlugins, PubSubClient } from '@ably/pubsub-core/device';
 import { deviceAgentIdentifier, optionsWithSideAgent } from '../../core-impl/side/side';
 
 // Enumerated rather than star-re-exported so that the client classes, `BaseRealtime` and `BaseHttp`,
@@ -52,7 +52,7 @@ export {
  * The contract is documented on the declaration in ../modular/index.d.ts, which is what consumers
  * see.
  */
-export function createClient(options: ClientOptions<CorePlugins & ModularPlugins>): PubSubRealtimeClient {
+export function createClient(options: ClientOptions<DevicePlugins & ModularPlugins>): PubSubClient {
   // The signature already forbids bare key/token strings, but a JS caller can still pass one.
   // Hand it to the constructor unstamped rather than normalising it into an options object:
   // the implementation deliberately rejects strings for modular clients with an error telling the caller
@@ -60,7 +60,7 @@ export function createClient(options: ClientOptions<CorePlugins & ModularPlugins
   // would replace that with a generic missing-plugin failure the caller cannot act on. No side
   // agent is needed on a path that always throws.
   if (typeof options === 'string') {
-    return new BaseRealtime(options as unknown as ClientOptions<CorePlugins & ModularPlugins>);
+    return new BaseRealtime(options as unknown as ClientOptions<DevicePlugins & ModularPlugins>) as PubSubClient;
   }
 
   // `optionsWithSideAgent` is typed against the default plugin map, because that is all the
@@ -68,8 +68,10 @@ export function createClient(options: ClientOptions<CorePlugins & ModularPlugins
   // reference — `plugins` included, untouched — so the wider plugin type a modular client requires
   // survives the call unharmed, and the cast restores it to the signature.
   const withSideAgent = optionsWithSideAgent(options, deviceAgentIdentifier) as ClientOptions<
-    CorePlugins & ModularPlugins
+    DevicePlugins & ModularPlugins
   >;
 
-  return new BaseRealtime(withSideAgent);
+  // The realtime class implements the device APIs that PubSubClient adds to PubSubRealtimeClient,
+  // so the assertion is sound. Only the device package exposes them.
+  return new BaseRealtime(withSideAgent) as PubSubClient;
 }

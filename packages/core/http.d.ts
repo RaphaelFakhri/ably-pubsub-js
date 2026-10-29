@@ -34,8 +34,7 @@ import type {
   PresenceMessage,
   PublishOptions,
   PublishResult,
-  PushAdmin,
-  PushChannel,
+  Push,
   RealtimeChannel,
   Stats,
   StatsParams,
@@ -233,19 +232,9 @@ export declare interface PubSubHttpClient {
    */
   batchPresence(channels: string[]): Promise<BatchResult<BatchPresenceSuccessResult | BatchPresenceFailureResult>[]>;
   /**
-   * A {@link HttpPush} object.
+   * A {@link Push} object.
    */
-  push: HttpPush;
-}
-
-/**
- * Enables the management of push notification registrations with Ably from the HTTP client. Activating the local device for push notifications is a device-side concern, available only on the realtime client.
- */
-export declare interface HttpPush {
-  /**
-   * A {@link PushAdmin} object.
-   */
-  admin: PushAdmin;
+  push: Push;
 }
 
 /**
@@ -287,10 +276,6 @@ export declare interface HttpChannel {
    * {@link HttpAnnotations}
    */
   annotations: HttpAnnotations;
-  /**
-   * A {@link PushChannel} object.
-   */
-  push: PushChannel;
   /**
    * Retrieves a {@link PaginatedResult} object, containing an array of historical {@link InboundMessage} objects for the channel. If the channel is configured to persist messages, then messages can be retrieved from history for up to 72 hours in the past. If not, messages can only be retrieved from history for up to two minutes in the past.
    *

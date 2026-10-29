@@ -1,6 +1,11 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["packages/core/ably.d.ts", "packages/core/modular.d.ts", "packages/core/liveobjects.d.ts"],
+  "entryPoints": [
+    "packages/core/ably.d.ts",
+    "packages/core/device.d.ts",
+    "packages/core/modular.d.ts",
+    "packages/core/liveobjects.d.ts"
+  ],
   "tsconfig": "packages/core/tsconfig.typedoc.json",
   "out": "typedoc/generated",
   "readme": "typedoc/landing-page.md",

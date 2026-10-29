@@ -27,8 +27,8 @@ import type {
   BatchPresenceSuccessResult,
   BatchPresenceFailureResult,
   Push,
-  LocalDevice,
 } from '@ably/pubsub-core/api';
+import type { ClientOptions as DeviceClientOptions, DevicePlugins, LocalDevice } from '@ably/pubsub-core/device';
 import type { ModularPlugins } from '@ably/pubsub-core/modular';
 
 export * from '@ably/pubsub-core/modular';
@@ -66,7 +66,7 @@ export declare class BaseHttp implements PubSubHttpClient {
  * realtime transport in `ClientOptions.plugins`.
  */
 export declare class BaseRealtime implements PubSubRealtimeClient {
-  constructor(options: ClientOptions<CorePlugins & ModularPlugins>);
+  constructor(options: DeviceClientOptions<DevicePlugins & ModularPlugins>);
 
   clientId: string;
   close(): void;

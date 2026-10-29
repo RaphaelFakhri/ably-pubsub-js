@@ -1,23 +1,22 @@
-import type { ClientOptions, PubSubRealtimeClient } from '@ably/pubsub-core/types';
+import type { ClientOptions, PubSubClient } from '@ably/pubsub-core/device';
 
 /**
- * The core's type surface, minus the stateless HTTP client and the types only it reaches. Safe as
- * a star re-export because it resolves at compile time only — see ../core-impl/side/core-exports.ts for
- * why the *runtime* re-export is enumerated instead.
+ * The core's type surface, minus the stateless HTTP client and the types only it reaches, plus the
+ * device-only part that the client this package creates, {@link PubSubClient}, reaches. Safe as a
+ * star re-export because it resolves at compile time only — see ../core-impl/side/core-exports.ts
+ * for why the *runtime* re-export is enumerated instead.
  *
- * This is `@ably/pubsub-core/types` rather than the package root because this package offers no
- * HTTP client, and TypeScript has no way to re-export a module minus some names. The core keeps
- * the HTTP-only declarations in a module of their own, which only the root re-exports.
+ * These are `@ably/pubsub-core/types` and `@ably/pubsub-core/device` rather than the package root
+ * because this package offers no HTTP client, and TypeScript has no way to re-export a module minus
+ * some names. The core keeps the HTTP-only declarations in a module of their own, which only the
+ * root re-exports, and the device-only declarations in another, which the root does not.
  */
 export * from '@ably/pubsub-core/types';
-
-/**
- * A Pub/Sub client for a device, as {@link createClient} returns it.
- *
- * It is the core's {@link PubSubRealtimeClient} under the name this package uses: a device has one
- * kind of client, so there is nothing for the longer name to distinguish it from.
- */
-export type PubSubClient = PubSubRealtimeClient;
+export * from '@ably/pubsub-core/device';
+// Both modules declare ClientOptions and RealtimeChannel, so the star exports above would leave the
+// names ambiguous. A local export takes precedence over both: the device's, which add the push
+// options and `push` to the shared ones.
+export type { ClientOptions, RealtimeChannel } from '@ably/pubsub-core/device';
 
 /**
  * Creates a Pub/Sub client for a device: a browser, a mobile app, or any other runtime

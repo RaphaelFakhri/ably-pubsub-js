@@ -1,3 +1,4 @@
+import type { PubSubClient } from '@ably/pubsub-core/device';
 import React from 'react';
 import { it, beforeEach, describe, expect } from 'vitest';
 import { useState } from 'react';
@@ -9,9 +10,7 @@ import { PubSubClientProvider } from '../PubSubClientProvider.js';
 import { useConnectionStateListener } from './useConnectionStateListener.js';
 
 function renderInCtxProvider(client: FakeAblySdk, children: React.ReactNode | React.ReactNode[]) {
-  return render(
-    <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>{children}</PubSubClientProvider>,
-  );
+  return render(<PubSubClientProvider client={client as unknown as PubSubClient}>{children}</PubSubClientProvider>);
 }
 
 describe('useConnectionStateListener', () => {

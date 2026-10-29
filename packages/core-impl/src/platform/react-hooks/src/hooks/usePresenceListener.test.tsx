@@ -1,3 +1,4 @@
+import type { PubSubClient } from '@ably/pubsub-core/device';
 import React from 'react';
 import type * as Ably from '@ably/pubsub-core';
 import { it, beforeEach, describe, expect, vi } from 'vitest';
@@ -11,7 +12,7 @@ const testChannelName = 'testChannel';
 
 function renderInCtxProvider(client: FakeAblySdk, children: React.ReactNode | React.ReactNode[]) {
   const renderResult = render(
-    <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>
+    <PubSubClientProvider client={client as unknown as PubSubClient}>
       <ChannelProvider channelName={testChannelName}>{children}</ChannelProvider>
     </PubSubClientProvider>,
   );
@@ -19,7 +20,7 @@ function renderInCtxProvider(client: FakeAblySdk, children: React.ReactNode | Re
   const originalRerender = renderResult.rerender;
   renderResult.rerender = (children: React.ReactNode | React.ReactNode[]) => {
     return originalRerender(
-      <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>
+      <PubSubClientProvider client={client as unknown as PubSubClient}>
         <ChannelProvider channelName={testChannelName}>{children}</ChannelProvider>
       </PubSubClientProvider>,
     );
@@ -140,7 +141,7 @@ describe('usePresenceListener', () => {
 
     renderInCtxProvider(
       ablyClient,
-      <PubSubClientProvider contextId="otherClient" client={otherClient as unknown as Ably.PubSubRealtimeClient}>
+      <PubSubClientProvider contextId="otherClient" client={otherClient as unknown as PubSubClient}>
         <ChannelProvider channelName={testChannelName} contextId="otherClient">
           <UsePresenceListenerComponentMultipleClients />
         </ChannelProvider>

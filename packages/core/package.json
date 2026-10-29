@@ -30,6 +30,9 @@
     "./types": {
       "types": "./types.d.ts"
     },
+    "./device": {
+      "types": "./device.d.ts"
+    },
     "./modular": {
       "types": "./modular.d.ts"
     },
@@ -64,6 +67,7 @@
     "ably.d.ts",
     "types.d.ts",
     "http.d.ts",
+    "device.d.ts",
     "liveobjects.d.ts",
     "liveobjects.d.mts",
     "liveobjects-types.d.ts",

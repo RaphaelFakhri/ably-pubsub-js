@@ -1,4 +1,4 @@
-import * as Ably from '@ably/pubsub-core/api';
+import type { PubSubClient, RealtimeChannel } from '@ably/pubsub-core/device';
 import React from 'react';
 
 // We need to make sure we never create more than one Ably React context.
@@ -18,7 +18,7 @@ const globalObjectForContext: { [contextKey]?: React.Context<PubSubContextValue>
 export type PubSubContextValue = Record<string, PubSubContextProviderProps>;
 
 export interface PubSubContextProviderProps {
-  client: Ably.PubSubRealtimeClient;
+  client: PubSubClient;
   _channelNameToChannelContext: Record<string, ChannelContextProps>;
   // The channel named by the closest enclosing `ChannelProvider`. Channel hooks
   // called without an explicit channel name resolve to this, so the name does
@@ -27,7 +27,7 @@ export interface PubSubContextProviderProps {
 }
 
 export interface ChannelContextProps {
-  channel: Ably.RealtimeChannel;
+  channel: RealtimeChannel;
   derived?: boolean;
 }
 

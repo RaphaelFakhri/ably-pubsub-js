@@ -1,3 +1,4 @@
+import type { PubSubClient } from '@ably/pubsub-core/device';
 import React from 'react';
 import { it, beforeEach, describe, expect } from 'vitest';
 import { useChannelStateListener } from './useChannelStateListener.js';
@@ -11,7 +12,7 @@ import { ChannelProvider } from '../ChannelProvider.js';
 
 function renderInCtxProvider(client: FakeAblySdk, children: React.ReactNode | React.ReactNode[]) {
   return render(
-    <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>
+    <PubSubClientProvider client={client as unknown as PubSubClient}>
       <ChannelProvider channelName="blah">{children}</ChannelProvider>
     </PubSubClientProvider>,
   );

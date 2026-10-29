@@ -1,7 +1,7 @@
+import type { PubSubClient } from '@ably/pubsub-core/device';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import type * as Ably from '@ably/pubsub-core';
 import { FakeAblySdk, FakeAblyChannels } from '../fakes/ably.js';
 import { PubSubClientProvider } from '../PubSubClientProvider.js';
 import { usePubSubClient } from './usePubSubClient.js';
@@ -38,7 +38,7 @@ describe('hooks called outside an PubSubClientProvider', () => {
     const spy = silenceConsoleError();
     const client = new FakeAblySdk().connectTo(new FakeAblyChannels(['channel']));
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <PubSubClientProvider client={client as unknown as Ably.PubSubRealtimeClient}>{children}</PubSubClientProvider>
+      <PubSubClientProvider client={client as unknown as PubSubClient}>{children}</PubSubClientProvider>
     );
     expect(() => renderHook(() => usePubSubClient('missing'), { wrapper })).toThrow(expectedMessage);
     spy.mockRestore();

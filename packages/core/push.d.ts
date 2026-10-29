@@ -1,11 +1,11 @@
 // The ESLint warning is triggered because we only use these types in a documentation comment.
 /* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
-import { PubSubRealtimeClient } from './ably';
+import { PubSubClient } from './device';
 import { Http } from './modular';
 /* eslint-enable no-unused-vars, @typescript-eslint/no-unused-vars */
 
 /**
- * Provides a {@link PubSubRealtimeClient} with the ability to be activated as a target for push notifications.
+ * Provides a {@link PubSubClient} with the ability to be activated as a target for push notifications.
  *
  * To create a client that includes this plugin, include it in the client options that you pass to `createClient()`:
  *
