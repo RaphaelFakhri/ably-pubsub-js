@@ -322,13 +322,6 @@ export interface ClientOptions<Plugins = CorePlugins> extends AuthOptions {
   autoConnect?: boolean;
 
   /**
-   * When `true`, operations that would otherwise fail silently, such as those gated on a channel mode, reject with an {@link ErrorInfo} whose {@link ErrorInfo.remediation | `remediation`} describes the cause and how to fix it. When `false`, the same paths emit a warning log and return their legacy silent value. The default is `false`. A future major version will make the strict behaviour unconditional.
-   *
-   * @defaultValue `false`
-   */
-  strictMode?: boolean;
-
-  /**
    * When a {@link TokenParams} object is provided, it overrides the client library defaults when issuing new Ably Tokens or Ably {@link TokenRequest | `TokenRequest`s}.
    */
   defaultTokenParams?: TokenParams;
@@ -1933,7 +1926,7 @@ export declare interface RealtimePresence {
   unsubscribe(): void;
 
   /**
-   * Retrieves the current members present on the channel and the metadata for each member, such as their {@link PresenceAction} and ID. Implicitly attaches the channel if it is not already attached. Without the `presence_subscribe` mode the call resolves with an empty array.
+   * Retrieves the current members present on the channel and the metadata for each member, such as their {@link PresenceAction} and ID. Implicitly attaches the channel if it is not already attached. Without the `presence_subscribe` mode the call rejects with an {@link ErrorInfo} with code 91008.
    *
    * On a channel in the `suspended` state the call rejects with an {@link ErrorInfo}. Pass `waitForSync: false` to resolve with the last known members instead.
    *
@@ -2473,7 +2466,7 @@ export declare interface RealtimeChannel extends EventEmitter<channelEventCallba
    */
   setOptions(options: ChannelOptions): Promise<void>;
   /**
-   * Registers a listener for messages with a given event name on this channel. Implicitly attaches the channel unless {@link ChannelOptions.attachOnSubscribe} is `false`. Without the `subscribe` mode the server delivers no messages and the listener never fires.
+   * Registers a listener for messages with a given event name on this channel. Implicitly attaches the channel unless {@link ChannelOptions.attachOnSubscribe} is `false`. If the channel is attached without the `subscribe` mode, the call rejects with an {@link ErrorInfo} with code 90009, because the server delivers no messages. The listener stays registered.
    *
    * @param event - The event name.
    * @param listener - An event listener function.
@@ -2486,7 +2479,7 @@ export declare interface RealtimeChannel extends EventEmitter<channelEventCallba
    */
   subscribe(event: string, listener?: messageCallback<InboundMessage>): Promise<ChannelStateChange | null>;
   /**
-   * Registers a listener for messages on this channel for multiple event name values. Implicitly attaches the channel unless {@link ChannelOptions.attachOnSubscribe} is `false`. Without the `subscribe` mode the server delivers no messages and the listener never fires.
+   * Registers a listener for messages on this channel for multiple event name values. Implicitly attaches the channel unless {@link ChannelOptions.attachOnSubscribe} is `false`. If the channel is attached without the `subscribe` mode, the call rejects with an {@link ErrorInfo} with code 90009, because the server delivers no messages. The listener stays registered.
    *
    * @param events - An array of event names.
    * @param listener - An event listener function.
@@ -2501,7 +2494,7 @@ export declare interface RealtimeChannel extends EventEmitter<channelEventCallba
   /**
    * {@label WITH_MESSAGE_FILTER}
    *
-   * Registers a listener for messages on this channel that match the supplied filter. Implicitly attaches the channel unless {@link ChannelOptions.attachOnSubscribe} is `false`. Without the `subscribe` mode the server delivers no messages and the listener never fires.
+   * Registers a listener for messages on this channel that match the supplied filter. Implicitly attaches the channel unless {@link ChannelOptions.attachOnSubscribe} is `false`. If the channel is attached without the `subscribe` mode, the call rejects with an {@link ErrorInfo} with code 90009, because the server delivers no messages. The listener stays registered.
    *
    * @param filter - A {@link MessageFilter}.
    * @param listener - An event listener function.
@@ -2514,7 +2507,7 @@ export declare interface RealtimeChannel extends EventEmitter<channelEventCallba
    */
   subscribe(filter: MessageFilter, listener?: messageCallback<InboundMessage>): Promise<ChannelStateChange | null>;
   /**
-   * Registers a listener for messages on this channel. Implicitly attaches the channel unless {@link ChannelOptions.attachOnSubscribe} is `false`. Without the `subscribe` mode the server delivers no messages and the listener never fires.
+   * Registers a listener for messages on this channel. Implicitly attaches the channel unless {@link ChannelOptions.attachOnSubscribe} is `false`. If the channel is attached without the `subscribe` mode, the call rejects with an {@link ErrorInfo} with code 90009, because the server delivers no messages. The listener stays registered.
    *
    * @param callback - An event listener function.
    * @returns A promise which, upon successful attachment to the channel, will be fulfilled with a {@link ChannelStateChange} object. If the channel was already attached the promise will be resolved with `null`. The promise also resolves with `null` when {@link ChannelOptions.attachOnSubscribe} is `false`, in which case no attach is attempted. Upon failure, the promise will be rejected with an {@link ErrorInfo} object.

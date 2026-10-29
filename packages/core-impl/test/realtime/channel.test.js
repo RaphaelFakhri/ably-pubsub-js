@@ -2121,17 +2121,17 @@ define(['ably', 'shared_helper', 'async', 'chai'], function (Ably, Helper, async
 
     describe('subscribe() without subscribe mode', function () {
       /**
-       * Subscribe on a channel attached without the subscribe mode, with strictMode enabled.
+       * Subscribe on a channel attached without the subscribe mode.
        * The listener must remain registered despite the failure, so once the mode is granted
        * via setOptions it receives messages without a further subscribe call.
        *
        * @spec RTL7i1
        */
-      it('with strictMode:true, attach resolves but subscribe rejects with 90009 and a subscribe-mode remediation', async function () {
+      it('attach resolves but subscribe rejects with 90009 and a subscribe-mode remediation', async function () {
         const helper = this.test.helper;
-        const realtime = helper.AblyRealtime({ strictMode: true });
+        const realtime = helper.AblyRealtime();
         await helper.monitorConnectionThenCloseAndFinishAsync(async () => {
-          const channel = realtime.channels.get('subscribe-without-mode-strict-' + String(Math.random()).slice(2), {
+          const channel = realtime.channels.get('subscribe-without-mode-' + String(Math.random()).slice(2), {
             modes: ['publish'],
           });
           let resolveReceived;
@@ -2159,41 +2159,6 @@ define(['ably', 'shared_helper', 'async', 'chai'], function (Ably, Helper, async
           await channel.publish('event', 'data');
           const msg = await received;
           expect(msg.data).to.equal('data');
-        }, realtime);
-      });
-
-      /**
-       * Subscribe on a channel attached without the subscribe mode, with strictMode off (default).
-       * The call succeeds, a warning naming strictMode is logged, and the warning is not
-       * repeated on a subsequent subscribe on the same attachment.
-       *
-       * @spec RTL7i2
-       */
-      it('with strictMode disabled (default), subscribe resolves and logs a warning once per attachment', async function () {
-        const helper = this.test.helper;
-        const warnings = [];
-        const realtime = helper.AblyRealtime({
-          logLevel: 1,
-          logHandler: function (msg) {
-            if (msg.indexOf('RealtimeChannel.subscribe()') !== -1) {
-              warnings.push(msg);
-            }
-          },
-        });
-        await helper.monitorConnectionThenCloseAndFinishAsync(async () => {
-          const channel = realtime.channels.get('subscribe-without-mode-silent-' + String(Math.random()).slice(2), {
-            modes: ['publish'],
-          });
-          const result = await channel.subscribe(function () {});
-          // attach resolves (ChannelStateChange or null) without throwing; the listener is harmless because the server will never deliver
-          expect(result === null || (result && typeof result === 'object')).to.equal(true);
-          expect(channel.state).to.equal('attached');
-          expect(warnings.length).to.equal(1);
-          expect(warnings[0]).to.contain('subscribe mode');
-          expect(warnings[0]).to.contain('strictMode');
-          // a second subscribe on the same attachment must not log again
-          await channel.subscribe(function () {});
-          expect(warnings.length).to.equal(1);
         }, realtime);
       });
     });

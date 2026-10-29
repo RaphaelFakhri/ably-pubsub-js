@@ -621,7 +621,8 @@ describe('uts/realtime/unit/presence/realtime_presence_reentry', function () {
    * All members belonging to the current connection are published as a
    * PresenceMessage on the channel by the server irrespective of whether
    * the client has permission to subscribe. The member should be present
-   * in the public presence set via get.
+   * in the presence set. Without the presence_subscribe mode, get() rejects
+   * with 91008 rather than returning that set, so the test reads the map.
    */
   // UTS: realtime/unit/RTP17a/server-publishes-without-subscribe-0
   it('RTP17a - server publishes member regardless of subscribe capability', async function () {
@@ -690,11 +691,18 @@ describe('uts/realtime/unit/presence/realtime_presence_reentry', function () {
     await channel.presence.enter(undefined);
     await flushAsync();
 
-    // Check public presence map
-    const members = await channel.presence.get({ waitForSync: false });
+    // ably-js deviation: get() rejects without presence_subscribe, so inspect the map directly
+    const members = (channel.presence as any).members.values();
 
     expect(members.length).to.equal(1);
     expect(members[0].clientId).to.equal('my-client');
+
+    try {
+      await channel.presence.get({ waitForSync: false });
+      expect.fail('expected presence.get() to reject without the presence_subscribe mode');
+    } catch (err: any) {
+      expect(err.code).to.equal(91008);
+    }
 
     client.close();
   });

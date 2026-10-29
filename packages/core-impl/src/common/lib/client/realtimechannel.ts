@@ -99,7 +99,6 @@ class RealtimeChannel extends EventEmitter {
   };
   errorReason: ErrorInfo | null;
   _mode = 0;
-  _silentSubscribeWarned = false;
   _decodingContext: EncodingDecodingContext;
   _lastPayload: {
     messageId?: string | null;
@@ -523,20 +522,9 @@ class RealtimeChannel extends EventEmitter {
         remediation:
           'Include "message_subscribe" in the channel modes: realtime.channels.get(name, { modes: ["message_subscribe", ...] }), or call channel.setOptions({ modes: [...] }) on an existing channel to trigger a reattach. Alternatively, omit modes entirely and ensure your token/API-key capability permits subscribe on this channel. If you have the Ably CLI installed, `ably auth keys list` shows your key\'s capabilities.',
       });
-      if (this.client.options.strictMode === true) {
-        // The listener stays registered despite the throw, matching subscribe()'s existing
-        // semantics: the listener is always added regardless of attach outcome.
-        throw err;
-      }
-      if (!this._silentSubscribeWarned) {
-        Logger.logActionNoStrip(
-          this.logger,
-          Logger.LOG_ERROR,
-          'RealtimeChannel.subscribe()',
-          err.message + '; remediation=' + err.remediation + Logger.silentFailureLogSuffix(),
-        );
-        this._silentSubscribeWarned = true;
-      }
+      // The listener stays registered despite the throw, matching subscribe()'s existing
+      // semantics: the listener is always added regardless of attach outcome.
+      throw err;
     }
     return stateChange;
   }
@@ -657,7 +645,6 @@ class RealtimeChannel extends EventEmitter {
           this.properties.attachSerial = message.channelSerial;
         }
         this._mode = message.getMode();
-        this._silentSubscribeWarned = false;
         this.params = (message as any).params || {};
         const modesFromFlags = message.decodeModesFromFlags();
         this.modes = (modesFromFlags && (Utils.allToLowerCase(modesFromFlags) as API.ChannelMode[])) || undefined;

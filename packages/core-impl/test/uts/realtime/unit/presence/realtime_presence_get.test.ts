@@ -51,7 +51,7 @@ describe('uts/realtime/unit/presence/realtime_presence_get', function () {
           mock.active_connection!.send_to_client({
             action: 11, // ATTACHED
             channel: msg.channel,
-            flags: 1, // HAS_PRESENCE
+            flags: 1 | (1 << 19), // HAS_PRESENCE | PRESENCE_SUBSCRIBE
           });
         }
       },
@@ -122,7 +122,7 @@ describe('uts/realtime/unit/presence/realtime_presence_get', function () {
           mock.active_connection!.send_to_client({
             action: 11, // ATTACHED
             channel: msg.channel,
-            flags: 1, // HAS_PRESENCE
+            flags: 1 | (1 << 19), // HAS_PRESENCE | PRESENCE_SUBSCRIBE
           });
         }
       },
@@ -202,7 +202,7 @@ describe('uts/realtime/unit/presence/realtime_presence_get', function () {
           mock.active_connection!.send_to_client({
             action: 11, // ATTACHED
             channel: msg.channel,
-            flags: 1, // HAS_PRESENCE
+            flags: 1 | (1 << 19), // HAS_PRESENCE | PRESENCE_SUBSCRIBE
           });
           // Start SYNC but don't complete it (cursor is non-empty)
           mock.active_connection!.send_to_client({
@@ -258,7 +258,7 @@ describe('uts/realtime/unit/presence/realtime_presence_get', function () {
           mock.active_connection!.send_to_client({
             action: 11, // ATTACHED
             channel: msg.channel,
-            flags: 1, // HAS_PRESENCE
+            flags: 1 | (1 << 19), // HAS_PRESENCE | PRESENCE_SUBSCRIBE
           });
           mock.active_connection!.send_to_client({
             action: 16, // SYNC
@@ -313,7 +313,7 @@ describe('uts/realtime/unit/presence/realtime_presence_get', function () {
           mock.active_connection!.send_to_client({
             action: 11, // ATTACHED
             channel: msg.channel,
-            flags: 1, // HAS_PRESENCE
+            flags: 1 | (1 << 19), // HAS_PRESENCE | PRESENCE_SUBSCRIBE
           });
           mock.active_connection!.send_to_client({
             action: 16, // SYNC
@@ -369,6 +369,7 @@ describe('uts/realtime/unit/presence/realtime_presence_get', function () {
           mock.active_connection!.send_to_client({
             action: 11, // ATTACHED
             channel: msg.channel,
+            flags: 1 << 19, // PRESENCE_SUBSCRIBE
           });
         }
       },
