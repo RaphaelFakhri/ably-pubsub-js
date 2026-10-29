@@ -1,5 +1,4 @@
-import type { ClientOptions } from '@ably/pubsub-core/types';
-import type { PubSubClient } from '@ably/pubsub-core/device';
+import type { ClientOptions, PubSubClient } from '@ably/pubsub-core/device';
 
 /**
  * The core's type surface, minus the stateless HTTP client and the types only it reaches, plus the
@@ -14,6 +13,10 @@ import type { PubSubClient } from '@ably/pubsub-core/device';
  */
 export * from '@ably/pubsub-core/types';
 export * from '@ably/pubsub-core/device';
+// Both modules declare ClientOptions and RealtimeChannel, so the star exports above would leave the
+// names ambiguous. A local export takes precedence over both: the device's, which add the push
+// options and `push` to the shared ones.
+export type { ClientOptions, RealtimeChannel } from '@ably/pubsub-core/device';
 
 /**
  * Creates a Pub/Sub client for a device: a browser, a mobile app, or any other runtime

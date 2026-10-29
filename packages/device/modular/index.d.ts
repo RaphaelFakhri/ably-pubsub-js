@@ -19,8 +19,7 @@
  * does not resolve. Use `@ably/pubsub-device` if you need CommonJS.
  */
 import type { ModularPlugins } from '@ably/pubsub-core/modular';
-import type { ClientOptions, CorePlugins } from '@ably/pubsub-core/api';
-import type { PubSubClient } from '../index.js';
+import type { ClientOptions, DevicePlugins, PubSubClient } from '../index.js';
 
 // Enumerated rather than star-re-exported, so that only the chosen names are public. The client
 // classes stay out: a client is created with `createClient` and typed as `PubSubClient`, and this
@@ -70,4 +69,4 @@ export type { PubSubClient };
  * include. At minimum this needs an HTTP request implementation (`FetchRequest` or `XHRRequest`)
  * and a transport (`WebSocketTransport` or `XHRPolling`).
  */
-export declare function createClient(options: ClientOptions<CorePlugins & ModularPlugins>): PubSubClient;
+export declare function createClient(options: ClientOptions<DevicePlugins & ModularPlugins>): PubSubClient;

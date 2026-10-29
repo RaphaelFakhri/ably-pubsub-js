@@ -1,4 +1,5 @@
 import * as Ably from '@ably/pubsub-core/api';
+import type * as Device from '@ably/pubsub-core/device';
 import { useEffect, useMemo, useRef } from 'react';
 import { ChannelParameters } from '../PubSubReactHooks.js';
 import { usePubSubClient } from './usePubSubClient.js';
@@ -9,10 +10,10 @@ import { useChannelAttach } from './useChannelAttach.js';
 export type PubSubMessageCallback = Ably.messageCallback<Ably.Message>;
 
 export interface ChannelResult {
-  channel: Ably.RealtimeChannel;
+  channel: Device.RealtimeChannel;
   publish: Ably.RealtimeChannel['publish'];
   history: Ably.RealtimeChannel['history'];
-  client: Ably.PubSubRealtimeClient;
+  client: Device.PubSubClient;
   connectionError: Ably.ErrorInfo | null;
   channelError: Ably.ErrorInfo | null;
 }

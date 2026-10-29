@@ -234,6 +234,32 @@ globalThis.testAblyPackage = async function () {
   void device.push.activate;
   void device.getDevice;
 
+  // Subscribing to push on a channel subscribes the local device or its clientId, so only the
+  // device's channels offer it, and only the device's options take the Push plugin.
+  // @ts-expect-error
+  void serverHttp.channels.get('channel').push;
+  // @ts-expect-error
+  void serverRealtime.channels.get('channel').push;
+  // @ts-expect-error
+  type ServerPushChannel = PubSubServer.PushChannel;
+  // @ts-expect-error
+  const serverWithPush = () => PubSubServer.createRealtimeClient({ key: 'app.key:secret', plugins: { Push } });
+  void serverWithPush;
+  const pushChannel: PubSubDevice.RealtimeChannel = device.channels.get('channel');
+  void pushChannel.push.subscribeDevice;
+  // The device's ClientOptions is the one that takes the Push plugin and the web push options, so
+  // an options object annotated with it, rather than with an explicit plugin map, still compiles.
+  const deviceOptions: PubSubDevice.ClientOptions = {
+    key: 'app.key:secret',
+    autoConnect: false,
+    plugins: { Push },
+    pushServiceWorkerUrl: '/sw.js',
+  };
+  void deviceOptions;
+  // @ts-expect-error
+  const serverOptions: PubSubServer.ClientOptions = { key: 'app.key:secret', pushServiceWorkerUrl: '/sw.js' };
+  void serverOptions;
+
   // Check the re-exported error type is the core's, so instanceof works across the boundary.
   const error: PubSubDevice.ErrorInfo = new PubSubDevice.ErrorInfo('message', 40000, 400);
   if (!(error instanceof PubSubServer.ErrorInfo)) {

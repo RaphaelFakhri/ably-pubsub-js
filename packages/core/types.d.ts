@@ -535,11 +535,6 @@ export interface ClientOptions<Plugins = CorePlugins> extends AuthOptions {
    * @defaultValue 65536
    */
   maxMessageSize?: number;
-
-  /**
-   * A URL pointing to a service worker script which is used as the target for web push notifications.
-   */
-  pushServiceWorkerUrl?: string;
 }
 
 /**
@@ -550,11 +545,6 @@ export interface CorePlugins {
    * A plugin capable of decoding `vcdiff`-encoded messages. For more information on how to configure a channel to use delta encoding, see the [documentation for the `@ably-forks/vcdiff-decoder` package](https://github.com/ably-forks/vcdiff-decoder#usage).
    */
   vcdiff?: any;
-
-  /**
-   * A plugin which allows the client to be the target of push notifications.
-   */
-  Push?: unknown;
 
   /**
    * A plugin which allows the client to use the MessagePack binary protocol. On the web and React Native, a client from `@ably/pubsub-device` or its CDN bundle has no MessagePack support of its own, and uses JSON unless it is given this plugin, which the package exports from `@ably/pubsub-device/msgpack` and the CDN serves as `AblyMsgPackPlugin.MsgPack` from `msgpack.umd.min.js`. Setting {@link ClientOptions.useBinaryProtocol} to `true` without this plugin throws when the client is constructed. On Node.js, a client from `@ably/pubsub-device` includes MessagePack, as does every client from `@ably/pubsub-server`, so it needs no plugin.
@@ -2268,39 +2258,6 @@ export declare interface RealtimeAnnotations {
 }
 
 /**
- * Enables devices to subscribe to push notifications for a channel.
- */
-export declare interface PushChannel {
-  /**
-   * Subscribes the device to push notifications for the channel.
-   */
-  subscribeDevice(): Promise<void>;
-
-  /**
-   * Unsubscribes the device from receiving push notifications for the channel.
-   */
-  unsubscribeDevice(): Promise<void>;
-
-  /**
-   * Subscribes all devices associated with the current device's `clientId` to push notifications for the channel.
-   */
-  subscribeClient(): Promise<void>;
-
-  /**
-   * Unsubscribes all devices associated with the current device's `clientId` from receiving push notifications for the channel.
-   */
-  unsubscribeClient(): Promise<void>;
-
-  /**
-   * Retrieves all push subscriptions for the channel. Subscriptions can be filtered using a params object.
-   *
-   * @param params - An object containing key-value pairs to filter subscriptions by. Can contain `clientId`, `deviceId` or a combination of both, and a `limit` on the number of subscriptions returned, up to 1,000.
-   * @returns a {@link PaginatedResult} object containing an array of {@link PushChannelSubscription} objects.
-   */
-  listSubscriptions(params?: Record<string, string>): Promise<PaginatedResult<PushChannelSubscription>>;
-}
-
-/**
  * Enables messages to be published and subscribed to. Also enables historic messages to be retrieved and provides access to the {@link RealtimePresence} object of a channel.
  */
 export declare interface RealtimeChannel extends EventEmitter<channelEventCallback, ChannelStateChange, ChannelEvent> {
@@ -2390,12 +2347,6 @@ export declare interface RealtimeChannel extends EventEmitter<channelEventCallba
    * A {@link RealtimePresence} object.
    */
   presence: RealtimePresence;
-  /**
-   * A {@link PushChannel} object that manages device push notification subscriptions for this channel. Accessing this property requires the `Push` plugin to be registered via {@link ClientOptions.plugins}. The default and modular builds do not bundle the `Push` plugin. If the plugin is absent, the getter throws an {@link ErrorInfo} rather than returning a {@link PushChannel}.
-   *
-   * @see https://ably.com/docs/pub-sub/api/javascript/realtime/realtime-channel#properties
-   */
-  push: PushChannel;
   /**
    * A {@link RealtimeAnnotations} object.
    */

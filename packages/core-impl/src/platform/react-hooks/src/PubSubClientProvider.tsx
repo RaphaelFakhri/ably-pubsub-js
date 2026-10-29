@@ -1,10 +1,10 @@
-import * as Ably from '@ably/pubsub-core/api';
+import type { PubSubClient } from '@ably/pubsub-core/device';
 import React, { useMemo } from 'react';
 import { PubSubContext, PubSubContextValue } from './PubSubContext.js';
 
 interface PubSubClientProviderProps {
   children?: React.ReactNode | React.ReactNode[] | null;
-  client?: Ably.PubSubRealtimeClient;
+  client?: PubSubClient;
   contextId?: string;
 }
 

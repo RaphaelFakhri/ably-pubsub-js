@@ -9,14 +9,19 @@
 
 /* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 import type {
+  Channels,
+  ClientOptions as BaseClientOptions,
+  CorePlugins,
   DeregisterCallback,
   ErrorCallback,
+  ErrorInfo,
   PaginatedResult,
   PubSubRealtimeClient,
   Push,
   PushAdmin,
   PushChannelSubscription,
   PushDeviceToken,
+  RealtimeChannel as BaseRealtimeChannel,
   RegisterCallback,
 } from './types';
 /* eslint-enable no-unused-vars, @typescript-eslint/no-unused-vars */
@@ -24,9 +29,13 @@ import type {
 /**
  * A Pub/Sub client for a device, as `createClient` from `@ably/pubsub-device` returns it.
  *
- * It is a {@link PubSubRealtimeClient} with the APIs that act on the local device as a target for push notifications: {@link PubSubClient.getDevice | `getDevice()`}, and a {@link DevicePush} object in place of {@link Push}.
+ * It is a {@link PubSubRealtimeClient} with the APIs that act on the local device as a target for push notifications: {@link PubSubClient.getDevice | `getDevice()`}, a {@link DevicePush} object in place of {@link Push}, and channels that are this module's {@link RealtimeChannel}, which adds `push` to the shared one.
  */
 export declare interface PubSubClient extends PubSubRealtimeClient {
+  /**
+   * A {@link Channels} object of {@link RealtimeChannel} objects.
+   */
+  channels: Channels<RealtimeChannel>;
   /**
    * A {@link DevicePush} object.
    */
@@ -37,6 +46,75 @@ export declare interface PubSubClient extends PubSubRealtimeClient {
    * @returns A promise which resolves to a {@link LocalDevice} object.
    */
   getDevice(): Promise<LocalDevice>;
+}
+
+/**
+ * A channel of a {@link PubSubClient}: the shared `RealtimeChannel`, with the {@link PushChannel} that subscribes the local device to push notifications for the channel.
+ *
+ * It has the same name as the shared one, and `@ably/pubsub-device` exports it in that one's place, so device code names its channels `RealtimeChannel` as on a server.
+ */
+export declare interface RealtimeChannel extends BaseRealtimeChannel {
+  /**
+   * A {@link PushChannel} object that manages device push notification subscriptions for this channel. Accessing this property requires the `Push` plugin to be registered via {@link ClientOptions.plugins}. The default and modular builds do not bundle the `Push` plugin. If the plugin is absent, the getter throws an {@link ErrorInfo} rather than returning a {@link PushChannel}.
+   *
+   * @see https://ably.com/docs/pub-sub/api/javascript/realtime/realtime-channel#properties
+   */
+  push: PushChannel;
+}
+
+/**
+ * Enables devices to subscribe to push notifications for a channel.
+ */
+export declare interface PushChannel {
+  /**
+   * Subscribes the device to push notifications for the channel.
+   */
+  subscribeDevice(): Promise<void>;
+
+  /**
+   * Unsubscribes the device from receiving push notifications for the channel.
+   */
+  unsubscribeDevice(): Promise<void>;
+
+  /**
+   * Subscribes all devices associated with the current device's `clientId` to push notifications for the channel.
+   */
+  subscribeClient(): Promise<void>;
+
+  /**
+   * Unsubscribes all devices associated with the current device's `clientId` from receiving push notifications for the channel.
+   */
+  unsubscribeClient(): Promise<void>;
+
+  /**
+   * Retrieves all push subscriptions for the channel. Subscriptions can be filtered using a params object.
+   *
+   * @param params - An object containing key-value pairs to filter subscriptions by. Can contain `clientId`, `deviceId` or a combination of both, and a `limit` on the number of subscriptions returned, up to 1,000.
+   * @returns a {@link PaginatedResult} object containing an array of {@link PushChannelSubscription} objects.
+   */
+  listSubscriptions(params?: Record<string, string>): Promise<PaginatedResult<PushChannelSubscription>>;
+}
+
+/**
+ * The options of a client from `createClient` from `@ably/pubsub-device`: the shared `ClientOptions`, with the {@link DevicePlugins} as the default plugin map, and the options of the local device as a push target.
+ *
+ * It has the same name as the shared one, and `@ably/pubsub-device` exports it in that one's place, so device code names its options `ClientOptions` as on a server.
+ */
+export interface ClientOptions<Plugins = DevicePlugins> extends BaseClientOptions<Plugins> {
+  /**
+   * A URL pointing to a service worker script which is used as the target for web push notifications.
+   */
+  pushServiceWorkerUrl?: string;
+}
+
+/**
+ * Describes the {@link ClientOptions.plugins | plugins} accepted by `createClient` from `@ably/pubsub-device`: those of {@link CorePlugins}, and the `Push` plugin.
+ */
+export interface DevicePlugins extends CorePlugins {
+  /**
+   * A plugin which allows the client to be the target of push notifications.
+   */
+  Push?: unknown;
 }
 
 /**

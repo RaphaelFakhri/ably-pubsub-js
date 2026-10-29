@@ -35,7 +35,6 @@ import type {
   PublishOptions,
   PublishResult,
   Push,
-  PushChannel,
   RealtimeChannel,
   Stats,
   StatsParams,
@@ -277,10 +276,6 @@ export declare interface HttpChannel {
    * {@link HttpAnnotations}
    */
   annotations: HttpAnnotations;
-  /**
-   * A {@link PushChannel} object.
-   */
-  push: PushChannel;
   /**
    * Retrieves a {@link PaginatedResult} object, containing an array of historical {@link InboundMessage} objects for the channel. If the channel is configured to persist messages, then messages can be retrieved from history for up to 72 hours in the past. If not, messages can only be retrieved from history for up to two minutes in the past.
    *
