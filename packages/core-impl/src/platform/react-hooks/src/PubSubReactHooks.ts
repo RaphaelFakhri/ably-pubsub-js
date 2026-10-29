@@ -18,7 +18,7 @@ export type ChannelNameAndOptions = {
 export type ChannelNameAndContextId = Pick<ChannelNameAndOptions, 'channelName' | 'contextId'>;
 export type ChannelParameters = string | ChannelNameAndOptions;
 
-export const version = '2.30.0';
+export const version = '3.0.0';
 
 /**
  * channel options for react-hooks
