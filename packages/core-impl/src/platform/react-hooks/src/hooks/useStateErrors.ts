@@ -1,0 +1,42 @@
+import type { ErrorInfo } from '@ably/pubsub-core/api';
+import { useState } from 'react';
+import { useConnectionStateListener } from './useConnectionStateListener.js';
+import { useChannelStateListener } from './useChannelStateListener.js';
+import { ChannelNameAndOptions } from '../PubSubReactHooks.js';
+
+export function useStateErrors(params: ChannelNameAndOptions) {
+  const [connectionError, setConnectionError] = useState<ErrorInfo | null>(null);
+  const [channelError, setChannelError] = useState<ErrorInfo | null>(null);
+
+  useConnectionStateListener(
+    ['suspended', 'failed', 'disconnected'],
+    (stateChange) => {
+      if (stateChange.reason) {
+        params.onConnectionError?.(stateChange.reason);
+        setConnectionError(stateChange.reason);
+      }
+    },
+    params.contextId,
+  );
+
+  useConnectionStateListener(
+    ['connected', 'closed'],
+    () => {
+      setConnectionError(null);
+    },
+    params.contextId,
+  );
+
+  useChannelStateListener(params, ['suspended', 'failed', 'detached'], (stateChange) => {
+    if (stateChange.reason) {
+      params.onChannelError?.(stateChange.reason);
+      setChannelError(stateChange.reason);
+    }
+  });
+
+  useChannelStateListener(params, ['attached'], () => {
+    setChannelError(null);
+  });
+
+  return { connectionError, channelError };
+}

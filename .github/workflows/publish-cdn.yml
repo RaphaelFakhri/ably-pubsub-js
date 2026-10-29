@@ -25,10 +25,10 @@ jobs:
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::${{ secrets.ABLY_AWS_ACCOUNT_ID_SDK }}:role/prod-ably-sdk-cdn
           role-session-name: '${{ github.run_id }}-${{ github.run_number }}'
-      - name: Use Node.js 20.x
+      - name: Use Node.js 22.x
         uses: actions/setup-node@f1f314fca9dfce2769ece7d933488f076716723e # v1
         with:
-          node-version: 20.x
+          node-version: 22.x
       - run: npm ci
       - env:
           VERSION: ${{ github.event.inputs.version }}

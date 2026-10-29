@@ -1,0 +1,405 @@
+# Migration guide for ably-js v3
+
+v3 splits the SDK into two packages, one per side of the connection, and this repository no longer publishes `ably`:
+
+| Your code runs on                                                                | Install               |
+| -------------------------------------------------------------------------------- | --------------------- |
+| An end user's device: a browser, React Native, Electron, a mobile or desktop app | `@ably/pubsub-device` |
+| Infrastructure you operate: a Node.js server, a container, a serverless function | `@ably/pubsub-server` |
+
+Here's how to migrate from ably-js v2 to v3:
+
+1. [Prepare on v2](#prepare-on-v2), by stopping use of the functionality that v3 removes.
+2. [Switch to a per-side package](#switch-package).
+3. [Create your clients through the factories](#use-the-factories).
+4. [Import the static helpers by name](#static-helpers).
+5. [Rename `Rest` to `Http`](#rest-to-http).
+
+<h2 id="prepare-on-v2">Prepare on v2</h2>
+
+Everything in this section can be done while you are still on v2, where the replacement APIs already exist and the old ones only log a deprecation warning. Doing it first keeps the version bump itself small.
+
+<h3 id="endpoint">Replace <code>environment</code>, <code>restHost</code> and <code>realtimeHost</code> with <code>endpoint</code></h3>
+
+The `environment`, `restHost` and `realtimeHost` client options are removed in v3. The `endpoint` client option replaces all three.
+
+> [!IMPORTANT]
+> These options are removed, not renamed, and v3 does not reject them: a client that still passes `environment` connects to the default endpoint instead.
+
+`endpoint` takes either a routing policy ID or a hostname, and which one you pass decides how the primary and fallback domains are derived:
+
+| v2                                      | v3                                      | Primary domain           | Fallback domains                        |
+| --------------------------------------- | --------------------------------------- | ------------------------ | --------------------------------------- |
+| `{ environment: 'main' }` (or unset)    | `{ endpoint: 'main' }` (or unset)       | `main.realtime.ably.net` | `main.{a–e}.fallback.ably-realtime.com` |
+| `{ environment: 'foo' }`                | `{ endpoint: 'foo' }`                   | `foo.realtime.ably.net`  | `foo.{a–e}.fallback.ably-realtime.com`  |
+| `{ restHost: 'test.org' }`              | `{ endpoint: 'test.org' }`              | `test.org`               | none                                    |
+| `{ realtimeHost: 'test.org' }`          | `{ endpoint: 'test.org' }`              | `test.org`               | none                                    |
+| `{ restHost: 'localhost', port: 8080 }` | `{ endpoint: 'localhost', port: 8080 }` | `localhost`              | none                                    |
+
+<h3 id="get-device">Replace <code>device()</code> with <code>await getDevice()</code></h3>
+
+The synchronous `device()` accessor on the client is removed. `getDevice()` replaces it, and returns a promise, so that it also works on platforms whose push storage is asynchronous, such as React Native.
+
+```diff
+- const device = client.device();
++ const device = await client.getDevice();
+```
+
+`getDevice()` exists only on the `PubSubClient` from `@ably/pubsub-device`. A server is not a push target, so neither client from `@ably/pubsub-server` has `getDevice()`, and their `push` offers only `push.admin`. Activating, deactivating and inspecting the local device for push notifications are device-side operations: use `@ably/pubsub-device` for them.
+
+The `Push` type now holds only `admin`. The device-side methods, `activate()`, `deactivate()` and `updateToken()`, are on `DevicePush`, which `PubSubClient.push` returns.
+
+The same applies to channels. `channel.push`, whose methods subscribe the local device or its client ID to push notifications for the channel, exists only on the channels of the `@ably/pubsub-device` client, whose `RealtimeChannel` type declares it. The `RealtimeChannel` of `@ably/pubsub-server` and its `HttpChannel` have no `push`: on a server, manage push channel subscriptions with `push.admin.channelSubscriptions`. The same goes for the push options. The `ClientOptions` that `@ably/pubsub-device` exports declares the `Push` plugin key and `pushServiceWorkerUrl`, and the `ClientOptions` of `@ably/pubsub-server` declares neither. This is a change to the types only: a server client given the `Push` plugin from JavaScript, or through a cast, still builds `channel.push` at runtime.
+
+<h3 id="recovery-key">Replace <code>connection.recoveryKey</code> with <code>connection.createRecoveryKey()</code></h3>
+
+```diff
+- const recoveryKey = client.connection.recoveryKey;
++ const recoveryKey = client.connection.createRecoveryKey();
+```
+
+In v2 `recoveryKey` was a getter that returned `createRecoveryKey()` and logged a deprecation warning, so the replacement is exact: both return `null` when there is nothing to recover. It had already been dropped from the TypeScript definitions before v3.
+
+<h3 id="entry-point-shims">Stop importing the <code>promises</code> and <code>callbacks</code> entry points</h3>
+
+The `ably/promises` and `ably/callbacks` subpaths existed only to help v1 code find the promise-based API. They are removed, and have no equivalent on the new packages. Import from the package root instead — the API there is the promise-based one.
+
+```diff
+- import * as Ably from 'ably/promises';
++ import { createClient } from '@ably/pubsub-device';
+```
+
+The v1 callback-signature overloads that TypeScript showed struck through are also gone from the type definitions. The runtime guards that reject a v1-style callback argument remain, so such a call still fails with an error explaining what to do rather than failing only at compile time.
+
+<h3 id="strict-mode">Handle the errors that <code>strictMode</code> enables</h3>
+
+The `strictMode` client option is removed, and its strict behaviour is now the only behaviour. Two calls that v2 let fail silently, logging an error, now reject:
+
+| Call                  | Rejects when the channel is attached without | Error code |
+| --------------------- | -------------------------------------------- | ---------- |
+| `channel.subscribe()` | the `subscribe` mode                         | 90009      |
+| `presence.get()`      | the `presence_subscribe` mode                | 91008      |
+
+In v2 these calls logged an error naming `strictMode`. To find them before upgrading, set `strictMode: true` on v2 and fix each call that rejects: request the missing mode in `ChannelOptions.modes`, or make sure your key or token has the subscribe capability on the channel. Then remove `strictMode` from your client options. `channel.subscribe()` still registers the listener when it rejects.
+
+<h3 id="channel-release">Detach a channel before you release it</h3>
+
+`channels.release(name)` now throws an `ErrorInfo` with code 90011 unless the channel is in the `initialized`, `detached` or `failed` state. In v2 it detached an attached channel itself and removed it once the detach completed. In the meantime, `channels.get()` for the same name returned the channel about to be removed, which then received no further messages. In v3 `release()` removes the channel immediately or not at all.
+
+Detach the channel and await the detach before releasing it. This works the same way on v2:
+
+```diff
+- client.channels.release('chat');
++ await client.channels.get('chat').detach();
++ client.channels.release('chat');
+```
+
+<h3 id="liveobjects-wire-fields">Stop reading the deprecated LiveObjects wire fields</h3>
+
+Only relevant if your code inspects raw LiveObjects `ObjectMessage` payloads. The deprecated duplicates of the typed fields are removed:
+
+| Removed                     | Use instead                                                     |
+| --------------------------- | --------------------------------------------------------------- |
+| `ObjectOperation.mapOp`     | `ObjectOperation.mapSet` / `ObjectOperation.mapRemove`          |
+| `ObjectOperation.counterOp` | `ObjectOperation.counterInc`                                    |
+| `ObjectOperation.map`       | `ObjectOperation.mapCreate`                                     |
+| `ObjectOperation.counter`   | `ObjectOperation.counterCreate`                                 |
+| `ObjectData.value`          | `ObjectData.boolean`, `.bytes`, `.number`, `.string` or `.json` |
+
+The `ObjectsMapOp`, `ObjectsCounterOp`, `ObjectsMap` and `ObjectsCounter` types, which existed only to describe those fields, are removed with them. Wire decoding is unaffected: these fields were only ever written on the way out, alongside the typed fields that replace them.
+
+<h2 id="switch-package">Switch to a per-side package</h2>
+
+Pick the package by **who owns the runtime**, not by which features you need — both expose the same API — and not by which side is cheaper to declare. Code that runs on an end user's device belongs on `@ably/pubsub-device`; code that runs on infrastructure you operate belongs on `@ably/pubsub-server`. See [What declaring a side means](#what-declaring-a-side-means) for why this matters.
+
+```sh
+npm uninstall ably
+
+npm install @ably/pubsub-device    # in an app that runs on your users' devices
+npm install @ably/pubsub-server    # in a backend service that you operate
+```
+
+`@ably/pubsub-core` is an exact dependency of both, and npm installs it for you. It holds the API declarations and the runtime `ErrorInfo` that the Ably SDKs share. You do not need to depend on it directly, and should not import from it: everything you need is exported from the package you installed.
+
+A repository with both a frontend and a backend installs both packages, one in each. They are independent, and nothing stops a single monorepo containing both.
+
+<h3 id="import-paths">Update your import paths</h3>
+
+Every `ably` subpath has a counterpart on `@ably/pubsub-device`:
+
+| v2                                | v3                                      | What you get                                                            |
+| --------------------------------- | --------------------------------------- | ----------------------------------------------------------------------- |
+| `ably`                            | `@ably/pubsub-device`                   | `createClient`, plus the core's public API and type surface             |
+| `ably/modular`                    | `@ably/pubsub-device/modular`           | `createClient` for a tree-shakable client, and its plugins              |
+| `ably/react`                      | `@ably/pubsub-device/react`             | The React hooks: `PubSubClientProvider`, `useChannel`, `usePresence`, … |
+| `ably/liveobjects`                | `@ably/pubsub-device/liveobjects`       | The LiveObjects plugin                                                  |
+| `ably/liveobjects/react`          | `@ably/pubsub-device/liveobjects/react` | The `useObject` React hook for LiveObjects                              |
+| `ably/push`                       | `@ably/pubsub-device/push`              | The web push plugin                                                     |
+| `ably/react-native-push`          | `@ably/pubsub-device/react-native-push` | The React Native push plugin                                            |
+| `ably/promises`, `ably/callbacks` | — (removed)                             | See [above](#entry-point-shims)                                         |
+
+`@ably/pubsub-server` carries only what a server needs:
+
+| v2                 | v3                                | What you get                                                                            |
+| ------------------ | --------------------------------- | --------------------------------------------------------------------------------------- |
+| `ably`             | `@ably/pubsub-server`             | `createHttpClient`, `createRealtimeClient`, plus the core's entire public API and types |
+| `ably/liveobjects` | `@ably/pubsub-server/liveobjects` | The LiveObjects plugin                                                                  |
+
+Push receive and the React hooks are device-side concerns and are not re-exported on the server package. The modular variant is device-side too: it exists to shrink a browser bundle.
+
+The stateless HTTP client is a server-side concern, and `@ably/pubsub-device` does not offer one: there is no HTTP factory on the device package, and neither its root, `modular` nor `liveobjects` subpath exports the HTTP client's types, `BaseHttp`, or the HTTP client's LiveObjects API. The realtime client covers what a device needs from Ably's REST API, including history, `request()`, `stats()` and `time()`. The modular `Http` plugin, which gives a `BaseRealtime` those features, remains.
+
+On the web and React Native, the client from `@ably/pubsub-device`, like the CDN bundle, has most of its logs below error level stripped. It keeps its error logs, a few warnings, the logs of each protocol message and HTTP request it sends and receives (at `logLevel` 4), and every log of the push and LiveObjects plugins. So raising `logLevel` there shows only part of what the client does, and a custom `logHandler` receives only those logs, where in v2 it received every log at its level. To see every log there, import `createClient` from `@ably/pubsub-device/debug`, which is the same client from a build that keeps every log, or load `ably.debug.min` in place of `ably.min` in the CDN bundle's URL. You can use either in production too, for example when Ably support asks you for logs. On Node.js, `@ably/pubsub-device` keeps every log, as `@ably/pubsub-server` does, and `@ably/pubsub-device/debug` resolves to the same client.
+
+If you source the SDK from the CDN rather than npm, load the v3 bundle, `https://cdn.ably.com/lib/ably.min-3.js`, in place of `ably.min-2.js`. The bundle is now `@ably/pubsub-device`, exposed as the global `AblyPubSub` rather than `Ably`. That global exposes `createClient` rather than the client classes, and the clients it creates declare the device side:
+
+```diff
+- <script src="https://cdn.ably.com/lib/ably.min-2.js"></script>
++ <script src="https://cdn.ably.com/lib/ably.min-3.js"></script>
+- const client = new Ably.Realtime({ key, clientId: 'me' });
++ const client = AblyPubSub.createClient({ key, clientId: 'me' });
+```
+
+<h3 id="msgpack">Pass the <code>MsgPack</code> plugin to use MessagePack on the web and React Native</h3>
+
+This affects clients on the web and React Native, from npm or the CDN, that set `useBinaryProtocol: true`.
+
+In v2, every client except the modular variant bundled the MessagePack codec. In v3, MessagePack is a plugin that you import and pass in `ClientOptions.plugins`, like Push and LiveObjects. The web and React Native clients of `@ably/pubsub-device` do not include it, to keep them small:
+
+| Client                                                          | MessagePack                     | `useBinaryProtocol` default                    |
+| --------------------------------------------------------------- | ------------------------------- | ---------------------------------------------- |
+| `@ably/pubsub-device` and `/debug`, on the web and React Native | Only with the plugin            | `false`                                        |
+| The CDN bundle, `ably.min-3.js`                                 | Only with the plugin            | `false`                                        |
+| `@ably/pubsub-device/modular`                                   | Only with the plugin, as before | `false`                                        |
+| `@ably/pubsub-device` and `/debug`, on Node.js                  | Included                        | `true`                                         |
+| `@ably/pubsub-server`                                           | Included                        | `true` on Node.js, `false` in a non-Node build |
+
+JSON was already the default on the web and React Native, so a client there that leaves `useBinaryProtocol` unset or `false` behaves as before. A client that sets `useBinaryProtocol: true` without the plugin now throws an `ErrorInfo` with code 40019 when it is constructed. This includes a modular client, which in v2 silently fell back to JSON instead.
+
+To keep using MessagePack, pass the plugin:
+
+```javascript
+import { createClient } from '@ably/pubsub-device';
+import { MsgPack } from '@ably/pubsub-device/msgpack';
+
+const client = createClient({ key, clientId: 'me', useBinaryProtocol: true, plugins: { MsgPack } });
+```
+
+From the CDN, load `msgpack.umd.min.js` alongside `ably.min-3.js` and pass `plugins: { MsgPack: AblyMsgPackPlugin.MsgPack }`. To use JSON instead, remove `useBinaryProtocol: true`.
+
+<h3 id="es2020">Check that your runtimes and build tools support ES2020</h3>
+
+v3 is compiled to ES2020 rather than ES2017, so the published code uses syntax such as optional chaining (`?.`) and nullish coalescing (`??`) untranspiled. A runtime without ES2020 support fails to parse it.
+
+- From npm, if you support such runtimes, configure your bundler to transpile `@ably/pubsub-device` or `@ably/pubsub-server`. Some older bundlers, such as webpack 4, cannot parse ES2020 syntax at all, and need upgrading.
+- From the CDN, nothing transpiles the bundle for you, so it runs only in browsers that support ES2020.
+
+<h2 id="use-the-factories">Create your clients through the factories</h2>
+
+The `Realtime` and `Rest` constructors are gone. A client constructed directly would declare no side, so the factories are now the only way to create one, and they are how a client says which side it is on.
+
+On a device:
+
+```diff
+- import * as Ably from 'ably';
+- const client = new Ably.Realtime({ key, clientId: 'me' });
++ import { createClient } from '@ably/pubsub-device';
++ const client = createClient({ key, clientId: 'me' });
+```
+
+On a server, one factory per client kind:
+
+```diff
+- import * as Ably from 'ably';
+- const rest = new Ably.Rest({ key });
+- const realtime = new Ably.Realtime({ key });
++ import { createHttpClient, createRealtimeClient } from '@ably/pubsub-server';
++ const pubSubHttpClient = createHttpClient({ key });
++ const pubSubRealtimeClient = createRealtimeClient({ key });
+```
+
+Each factory returns a client with the same API the constructor's did, so the rest of your code is unchanged. Like the constructors, they accept a client options object, an API key, or a token.
+
+The factories return interfaces rather than classes, so a type annotation that named a class needs the interface instead:
+
+| v2                                     | v3                                                             |
+| -------------------------------------- | -------------------------------------------------------------- |
+| `Ably.Realtime`, `Ably.RealtimeClient` | `PubSubClient` on a device, `PubSubRealtimeClient` on a server |
+| `Ably.Rest`, `Ably.RestClient`         | `PubSubHttpClient`, on a server                                |
+
+Code that used `instanceof Ably.Realtime` or `instanceof Ably.Rest` has no class to test against, and should rely on the factory's return type instead.
+
+In the modular variant, the factory comes from the `modular` subpath and takes only an options object, never a bare key or token string, because a modular client is unusable without the plugins that `plugins` carries:
+
+```diff
+- import { BaseRealtime, WebSocketTransport, FetchRequest } from 'ably/modular';
+- const client = new BaseRealtime({ key, plugins: { WebSocketTransport, FetchRequest } });
++ import { createClient, WebSocketTransport, FetchRequest } from '@ably/pubsub-device/modular';
++ const client = createClient({ key, plugins: { WebSocketTransport, FetchRequest } });
+```
+
+If an SDK of your own sits on top of this one and sets its own `agents` entries, those are preserved: the side entry is added alongside them.
+
+<h3 id="agent">The <code>Ably-Agent</code> header names the package family and the side</h3>
+
+The SDK identifier in the `Ably-Agent` header is now `ably-pubsub-js/<version>` instead of `ably-js/<version>`. Alongside it, the factories add a versionless entry naming the side the client declares: `ably-pubsub-device` or `ably-pubsub-server`. If you match on the `Ably-Agent` header, for example in a proxy, a log filter or a dashboard, update the match to the new identifiers.
+
+<h3 id="what-declaring-a-side-means">What declaring a side means</h3>
+
+Device traffic counts toward your account's monthly active users. On an account billed by MAU:
+
+- a device connection **must** carry a client ID, and is rejected at connect without one, so set `clientId` or issue tokens that carry one;
+- a device client ID is subject to a per-client-ID concurrency limit.
+
+Server traffic is exempt from monthly active user counting, from the per-client-ID concurrency limit, and from the client ID requirement.
+
+Declaring the device side from a backend service inflates your monthly active user count and subjects that service to the per-client-ID concurrency limit. Declaring the server side from a device claims an exemption it is not entitled to.
+
+<h3 id="server-token-auth">With token authentication, you must add a claim</h3>
+
+> [!IMPORTANT]
+> Read this before deploying `@ably/pubsub-server`. Ably grants the server side on token auth only from a signed `x-ably-clientType=server` claim on the token itself. A client that declares itself a server without that claim is **rejected at connect**, not quietly treated as a device.
+
+So if your server authenticates with `authUrl` or `authCallback`, add that claim to the tokens your auth service issues **before** you deploy `@ably/pubsub-server`. Rolling the package out ahead of that change breaks the connection rather than degrading it.
+
+With an API key there is nothing to do: the `ably-pubsub-server` agent entry the factories send is enough on its own.
+
+This applies only to `@ably/pubsub-server`. `@ably/pubsub-device` needs no claim.
+
+<h2 id="static-helpers">Import the static helpers by name</h2>
+
+The static helpers on the client classes left with the classes. Each is now a class of its own, exported by name from both packages, with the same static methods:
+
+| v2                                                           | v3                                                            |
+| ------------------------------------------------------------ | ------------------------------------------------------------- |
+| `Ably.Realtime.Message`, `Ably.Rest.Message`                 | `Message`, for example `Message.fromEncoded()`                |
+| `Ably.Realtime.PresenceMessage`, `Ably.Rest.PresenceMessage` | `PresenceMessage`, for example `PresenceMessage.fromValues()` |
+| `Ably.Realtime.Annotation`, `Ably.Rest.Annotation`           | `Annotation`, for example `Annotation.fromEncoded()`          |
+| `Ably.Realtime.Crypto`, `Ably.Rest.Crypto`                   | `Crypto`, for example `Crypto.generateRandomKey()`            |
+
+```diff
+- import * as Ably from 'ably';
+- const message = await Ably.Realtime.Message.fromEncoded(payload, { cipher: { key } });
++ import { Message } from '@ably/pubsub-server';
++ const message = await Message.fromEncoded(payload, { cipher: { key } });
+```
+
+The `MessageStatic`, `PresenceMessageStatic` and `AnnotationStatic` types that described them are removed. Use `typeof Message` and its siblings instead. `Message`, `PresenceMessage` and `Annotation` still name the instance types too, so one import serves as both.
+
+<h2 id="rest-to-http">Rename <code>Rest</code> to <code>Http</code></h2>
+
+The stateless client family is named after its transport in v3, matching the `createHttpClient` factory: `Rest` becomes `Http` throughout the public API.
+
+In the main API surface:
+
+| v2                   | v3                   |
+| -------------------- | -------------------- |
+| `RestClient`         | `PubSubHttpClient`   |
+| `Channel`            | `HttpChannel`        |
+| `Presence`           | `HttpPresence`       |
+| `RestAnnotations`    | `HttpAnnotations`    |
+| `RestHistoryParams`  | `HttpHistoryParams`  |
+| `RestPresenceParams` | `HttpPresenceParams` |
+
+In the modular variant:
+
+| v2                    | v3                    |
+| --------------------- | --------------------- |
+| the `Rest` plugin     | the `Http` plugin     |
+| `ModularPlugins.Rest` | `ModularPlugins.Http` |
+
+```diff
+- import { BaseRealtime, WebSocketTransport, FetchRequest, Rest } from 'ably/modular';
+- const realtime = new BaseRealtime({ ...options, plugins: { WebSocketTransport, FetchRequest, Rest } });
++ import { createClient, WebSocketTransport, FetchRequest, Http } from '@ably/pubsub-device/modular';
++ const realtime = createClient({ ...options, plugins: { WebSocketTransport, FetchRequest, Http } });
+```
+
+In LiveObjects, every `Rest`-prefixed type follows the same rule — `Rest` becomes `Http`, the rest of the name is unchanged:
+
+| v2                                                                                                    | v3                                                                                                    |
+| ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `RestObject`                                                                                          | `HttpObject`                                                                                          |
+| `RestObjectDataMapEntry`                                                                              | `HttpObjectDataMapEntry`                                                                              |
+| `RestObjectGetParams`, `RestObjectGetCompactParams`, `RestObjectGetFullParams`                        | `HttpObjectGetParams`, `HttpObjectGetCompactParams`, `HttpObjectGetFullParams`                        |
+| `RestObjectGetCompactResult`, `RestObjectGetFullResult`                                               | `HttpObjectGetCompactResult`, `HttpObjectGetFullResult`                                               |
+| `RestObjectGenerateIdResult`                                                                          | `HttpObjectGenerateIdResult`                                                                          |
+| `RestObjectPublishResult`                                                                             | `HttpObjectPublishResult`                                                                             |
+| `RestObjectOperation`, `RestObjectOperationBase`                                                      | `HttpObjectOperation`, `HttpObjectOperationBase`                                                      |
+| `RestObjectOperationMapCreate`, `…MapCreateBody`, `…MapCreateWithObjectId`, `…MapSet`, `…MapRemove`   | `HttpObjectOperationMapCreate`, `…MapCreateBody`, `…MapCreateWithObjectId`, `…MapSet`, `…MapRemove`   |
+| `RestObjectOperationCounterCreate`, `…CounterCreateBody`, `…CounterCreateWithObjectId`, `…CounterInc` | `HttpObjectOperationCounterCreate`, `…CounterCreateBody`, `…CounterCreateWithObjectId`, `…CounterInc` |
+| `RestLiveObject`, `RestLiveMap`, `RestLiveCounter`, `RestLiveObjectMapEntry`                          | `HttpLiveObject`, `HttpLiveMap`, `HttpLiveCounter`, `HttpLiveObjectMapEntry`                          |
+| `AnyRestLiveObject`                                                                                   | `AnyHttpLiveObject`                                                                                   |
+| `AnyTargetRestObjectOperationBase`                                                                    | `AnyTargetHttpObjectOperationBase`                                                                    |
+
+JavaScript users are affected only by the modular `Rest` plugin; the rest are types, and TypeScript will point at every use. The `Rest` class itself is covered by [the factories](#use-the-factories).
+
+What the rename deliberately leaves alone: the `restAgentOptions` and `idempotentRestPublishing` client options, which are cross-SDK spec option names; and prose and documentation URLs about Ably's REST API, which is still called the REST API. The removed `restHost` option is covered by [`endpoint`](#endpoint) instead.
+
+> [!NOTE]
+> If you reach into the client's internals, the request layer moved: `client.http` is now the modular `Http` plugin slot, and the requester is at `client.httpRequester`. Both are private API and neither is in `ably.d.ts`.
+
+<h2 id="react-renames">Rename the <code>Ably</code>-prefixed React exports</h2>
+
+The React exports that carried an `Ably` prefix are named after the Pub/Sub client instead:
+
+| v2                         | v3                           |
+| -------------------------- | ---------------------------- |
+| `AblyProvider`             | `PubSubClientProvider`       |
+| `useAbly`                  | `usePubSubClient`            |
+| `AblyContext`              | `PubSubContext`              |
+| `AblyContextValue`         | `PubSubContextValue`         |
+| `AblyContextProviderProps` | `PubSubContextProviderProps` |
+| `AblyMessageCallback`      | `PubSubMessageCallback`      |
+
+The props, options and return values that named the client after Ably are renamed too:
+
+| v2                                                                                       | v3                        |
+| ---------------------------------------------------------------------------------------- | ------------------------- |
+| `ablyId` prop on `AblyProvider` and `ChannelProvider`, option and argument on every hook | `contextId`               |
+| `ably` in the `useChannel` result                                                        | `client`                  |
+| `ChannelNameAndAblyId` type                                                              | `ChannelNameAndContextId` |
+
+Their behaviour is unchanged. Their types are the device client's: `PubSubClientProvider` takes a `PubSubClient`, and `usePubSubClient()` and the `client` of `useChannel()` return one, so `getDevice()`, `push.activate()` and `channel.push` are reachable through the hooks. A client annotated as `PubSubRealtimeClient` no longer type-checks as the provider's `client`. Annotate it as `PubSubClient`, the type that `createClient` returns.
+
+```diff
+- import { AblyProvider, useAbly } from 'ably/react';
++ import { PubSubClientProvider, usePubSubClient } from '@ably/pubsub-device/react';
+
+- <AblyProvider client={client} ablyId="secondary">{children}</AblyProvider>
++ <PubSubClientProvider client={client} contextId="secondary">{children}</PubSubClientProvider>
+
+- const { channel, ably } = useChannel({ channelName: 'chat', ablyId: 'secondary' });
++ const { channel, client } = useChannel({ channelName: 'chat', contextId: 'secondary' });
+```
+
+> [!NOTE]
+> A v2 `AblyProvider` and a v3 `PubSubClientProvider` do not share a React context, so hooks from one version cannot see a client provided by the other. Migrate a component tree's providers and hooks together.
+
+<h2 id="reference">Full list of breaking changes</h2>
+
+| Change                                                                                                                                                                                                                                                             | Action                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Install `@ably/pubsub-device` or `@ably/pubsub-server` and update every import ([step 2](#switch-package))                                                                                                                                                         | Switch package ([step 2](#switch-package))                                                                |
+| `ably/promises` and `ably/callbacks` entry points removed                                                                                                                                                                                                          | Import from the package root ([above](#entry-point-shims))                                                |
+| `Rest` → `Http` across the public API, the modular plugins, and the LiveObjects types                                                                                                                                                                              | Rename ([step 5](#rest-to-http))                                                                          |
+| React `AblyProvider`, `useAbly`, `AblyContext`, `AblyMessageCallback` and the `AblyContext*` types renamed with a `PubSub` prefix. `ablyId`, the `useChannel` result `ably` and `ChannelNameAndAblyId` renamed `contextId`, `client` and `ChannelNameAndContextId` | Rename ([above](#react-renames))                                                                          |
+| React `PubSubClientProvider` takes, and `usePubSubClient()` and the `useChannel()` `client` return, a `PubSubClient` rather than a `PubSubRealtimeClient`                                                                                                          | Annotate the client as `PubSubClient` ([above](#react-renames))                                           |
+| `Realtime` and `Rest` classes removed, with no replacement class                                                                                                                                                                                                   | Create clients through the factories ([step 3](#use-the-factories))                                       |
+| `BaseRealtime` and `BaseRest` modular classes removed, with no replacement class                                                                                                                                                                                   | Create clients with `createClient` from `@ably/pubsub-device/modular` ([step 3](#use-the-factories))      |
+| `RealtimeClient` and `RestClient` renamed `PubSubRealtimeClient` and `PubSubHttpClient`. A device client is a `PubSubClient`, which extends `PubSubRealtimeClient`                                                                                                 | Rename ([step 3](#use-the-factories))                                                                     |
+| `Message`, `PresenceMessage`, `Annotation` and `Crypto` statics moved to named class exports; `MessageStatic`, `PresenceMessageStatic` and `AnnotationStatic` removed                                                                                              | Import them by name ([step 4](#static-helpers))                                                           |
+| `@ably/pubsub-device` offers no HTTP client, and omits its types and its LiveObjects API                                                                                                                                                                           | Use the realtime client, or `@ably/pubsub-server` on infrastructure you operate ([step 2](#import-paths)) |
+| `environment`, `restHost` and `realtimeHost` client options removed — **silently ignored**, not rejected                                                                                                                                                           | Use `endpoint` ([above](#endpoint))                                                                       |
+| `device()` removed. `getDevice()` and the device methods of `push` exist only on the `@ably/pubsub-device` client, whose `push` is a `DevicePush`. `Push` holds only `admin`                                                                                       | `await getDevice()` on the `@ably/pubsub-device` client ([above](#get-device))                            |
+| `channel.push`, the `Push` plugin key and `pushServiceWorkerUrl` are typed only on the `@ably/pubsub-device` client and its `ClientOptions`. The `RealtimeChannel`, `HttpChannel` and `ClientOptions` of `@ably/pubsub-server` declare none of them                | `push.admin.channelSubscriptions` on a server ([above](#get-device))                                      |
+| `Connection.recoveryKey` removed                                                                                                                                                                                                                                   | `Connection.createRecoveryKey()` ([above](#recovery-key))                                                 |
+| `channels.release()` throws 90011 unless the channel is initialized, detached or failed                                                                                                                                                                            | Detach the channel first ([above](#channel-release))                                                      |
+| `strictMode` client option removed: `channel.subscribe()` without the `subscribe` mode rejects with 90009, and `presence.get()` without `presence_subscribe` rejects with 91008                                                                                    | Request the mode, then drop `strictMode` ([above](#strict-mode))                                          |
+| v1 callback-signature overloads removed from the type definitions                                                                                                                                                                                                  | Await the returned promise ([above](#entry-point-shims))                                                  |
+| LiveObjects `ObjectOperation.mapOp`, `.counterOp`, `.map`, `.counter` and `ObjectData.value` removed, with the `ObjectsMapOp`, `ObjectsCounterOp`, `ObjectsMap` and `ObjectsCounter` types                                                                         | Use the typed fields ([above](#liveobjects-wire-fields))                                                  |
+| MessagePack is a plugin for the web and React Native clients of `@ably/pubsub-device` and the CDN bundle; `useBinaryProtocol: true` without it throws 40019                                                                                                        | Pass `MsgPack` from `@ably/pubsub-device/msgpack`, or drop `useBinaryProtocol` ([above](#msgpack))        |
+| `Ably-Agent` SDK identifier is `ably-pubsub-js`, and the side entries are versionless                                                                                                                                                                              | Update anything matching on it ([step 3](#agent))                                                         |
+| The published code, including the CDN bundle, targets ES2020 instead of ES2017                                                                                                                                                                                     | Transpile the SDK in your bundler, or drop runtimes without ES2020 support ([above](#es2020))             |
+| Node.js 22 or later required                                                                                                                                                                                                                                       | Upgrade Node.js ([step 2](#switch-package))                                                               |
+| CDN bundle global renamed from `Ably` to `AblyPubSub`                                                                                                                                                                                                              | Rename ([step 2](#import-paths))                                                                          |

@@ -20,6 +20,6 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@f1f314fca9dfce2769ece7d933488f076716723e # v1
         with:
-          node-version: 20
+          node-version: 22.x
       - run: npm ci
       - run: npm run test:react
